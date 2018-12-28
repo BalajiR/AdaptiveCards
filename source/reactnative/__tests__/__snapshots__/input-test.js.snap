@@ -1,0 +1,894 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AC  Renderer SnapShot 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "transparent",
+      "flex": 1,
+    }
+  }
+>
+  <RCTScrollView>
+    <View>
+      <View
+        style={
+          Array [
+            Object {
+              "backgroundColor": "white",
+            },
+            undefined,
+            Object {
+              "marginTop": 10,
+            },
+          ]
+        }
+      >
+        <TextInput
+          allowFontScaling={true}
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+          keyboardType="numeric"
+          maxLength={1.7976931348623157e+308}
+          onBlur={[Function]}
+          onChangeText={[Function]}
+          onFocus={[Function]}
+          placeholder="Enter a number"
+          style={
+            Array [
+              Object {
+                "backgroundColor": "white",
+                "borderRadius": 5,
+                "borderWidth": 1,
+                "marginTop": 15,
+                "padding": 5,
+                "width": "100%",
+              },
+              Object {
+                "fontSize": 14,
+                "fontWeight": "400",
+              },
+              Object {
+                "height": 44,
+              },
+              Object {
+                "borderColor": "lightgrey",
+              },
+            ]
+          }
+          textContentType=""
+          underlineColorAndroid="transparent"
+          value=""
+        />
+      </View>
+      <View>
+        <View
+          style={
+            Array [
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+                "paddingTop": 10,
+              },
+            ]
+          }
+        >
+          <View
+            accessible={true}
+            isTVSelectable={true}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              Object {
+                "flexGrow": 1,
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#1D9BF6",
+                    "borderRadius": 15,
+                    "flexGrow": 1,
+                    "justifyContent": "center",
+                    "marginBottom": 10,
+                    "marginRight": 10,
+                    "padding": 10,
+                  },
+                  Object {
+                    "flexDirection": "row",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "color": "white",
+                    },
+                    Object {
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                    },
+                  ]
+                }
+              >
+                OK
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+</View>
+`;
+
+exports[`AdaptiveCard Renderer SnapShot 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "transparent",
+      "flex": 1,
+    }
+  }
+>
+  <RCTScrollView>
+    <View>
+      <View
+        style={
+          Array [
+            Object {
+              "backgroundColor": "white",
+            },
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "transparent",
+              "width": "100%",
+            },
+            Object {
+              "marginTop": 10,
+            },
+          ]
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            Array [
+              Object {
+                "textAlign": "left",
+                "width": "100%",
+              },
+              Object {
+                "fontSize": 14,
+                "fontWeight": "400",
+              },
+              Object {
+                "color": "#333333",
+                "fontSize": 17,
+                "fontWeight": "600",
+                "textAlign": "left",
+              },
+            ]
+          }
+        >
+          <Text>
+            Publish 
+          </Text>
+          <Text>
+            Adaptive 
+          </Text>
+          <Text>
+            Card 
+          </Text>
+          <Text>
+            schema 
+          </Text>
+        </Text>
+      </View>
+      <View
+        style={
+          Array [
+            Object {
+              "backgroundColor": "transparent",
+              "flex": 1,
+              "flexDirection": "row",
+            },
+            Object {
+              "flex": 2,
+            },
+          ]
+        }
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "backgroundColor": "white",
+              },
+              Object {
+                "backgroundColor": "transparent",
+                "flex": 1,
+                "flexDirection": "row",
+              },
+              Object {
+                "marginTop": 10,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                },
+                Object {
+                  "flexDirection": "column",
+                },
+                Object {
+                  "alignSelf": "auto",
+                },
+              ]
+            }
+          >
+            <View
+              onLayout={[Function]}
+              style={
+                Array [
+                  Object {
+                    "backgroundColor": "white",
+                  },
+                  Array [
+                    Object {
+                      "alignItems": "flex-start",
+                    },
+                    Object {
+                      "backgroundColor": "transparent",
+                    },
+                  ],
+                  Object {
+                    "marginTop": 10,
+                  },
+                ]
+              }
+            >
+              <Image
+                source={
+                  Object {
+                    "uri": "https://pbs.twimg.com/profile_images/3647943215/d7f12830b3c17a5a9e4afcc370e3a37e_400x400.jpeg",
+                  }
+                }
+                style={
+                  Array [
+                    Array [
+                      Object {
+                        "width": 80,
+                      },
+                      Object {
+                        "height": 80,
+                      },
+                      Object {
+                        "height": 80,
+                      },
+                    ],
+                    Object {
+                      "borderRadius": 40,
+                    },
+                  ]
+                }
+              />
+            </View>
+          </View>
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                },
+                Object {
+                  "flexDirection": "column",
+                },
+                Object {
+                  "flex": 1,
+                },
+              ]
+            }
+          >
+            <View
+              style={
+                Array [
+                  Object {
+                    "backgroundColor": "white",
+                  },
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "transparent",
+                    "width": "100%",
+                  },
+                  Object {
+                    "marginTop": 10,
+                  },
+                ]
+              }
+            >
+              <Text
+                numberOfLines={0}
+                style={
+                  Array [
+                    Object {
+                      "textAlign": "left",
+                      "width": "100%",
+                    },
+                    Object {
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                    },
+                    Object {
+                      "color": "#333333",
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "textAlign": "left",
+                    },
+                  ]
+                }
+              >
+                <Text>
+                  Matt 
+                </Text>
+                <Text>
+                  Hidinger 
+                </Text>
+              </Text>
+            </View>
+            <View
+              style={
+                Array [
+                  Object {
+                    "backgroundColor": "white",
+                  },
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "transparent",
+                    "width": "100%",
+                  },
+                  Object {
+                    "marginTop": 0,
+                  },
+                ]
+              }
+            >
+              <Text
+                numberOfLines={0}
+                style={
+                  Array [
+                    Object {
+                      "textAlign": "left",
+                      "width": "100%",
+                    },
+                    Object {
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                    },
+                    Object {
+                      "color": "rgba(51,51,51,0.9333333333333333)",
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                      "textAlign": "left",
+                    },
+                  ]
+                }
+              >
+                <Text>
+                  Created 
+                </Text>
+                <Text>
+                  Tue, 
+                </Text>
+                <Text>
+                  Feb 
+                </Text>
+                <Text>
+                  14, 
+                </Text>
+                <Text>
+                  2017 
+                </Text>
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        style={
+          Array [
+            Object {
+              "backgroundColor": "white",
+            },
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "transparent",
+              "width": "100%",
+            },
+            Object {
+              "marginTop": 10,
+            },
+          ]
+        }
+      >
+        <Text
+          numberOfLines={0}
+          style={
+            Array [
+              Object {
+                "textAlign": "left",
+                "width": "100%",
+              },
+              Object {
+                "fontSize": 14,
+                "fontWeight": "400",
+              },
+              Object {
+                "color": "#333333",
+                "fontSize": 14,
+                "fontWeight": "400",
+                "textAlign": "left",
+              },
+            ]
+          }
+        >
+          <Text>
+            Now 
+          </Text>
+          <Text>
+            that 
+          </Text>
+          <Text>
+            we 
+          </Text>
+          <Text>
+            have 
+          </Text>
+          <Text>
+            defined 
+          </Text>
+          <Text>
+            the 
+          </Text>
+          <Text>
+            main 
+          </Text>
+          <Text>
+            rules 
+          </Text>
+          <Text>
+            and 
+          </Text>
+          <Text>
+            features 
+          </Text>
+          <Text>
+            of 
+          </Text>
+          <Text>
+            the 
+          </Text>
+          <Text>
+            format, 
+          </Text>
+          <Text>
+            we 
+          </Text>
+          <Text>
+            need 
+          </Text>
+          <Text>
+            to 
+          </Text>
+          <Text>
+            produce 
+          </Text>
+          <Text>
+            a 
+          </Text>
+          <Text>
+            schema 
+          </Text>
+          <Text>
+            and 
+          </Text>
+          <Text>
+            publish 
+          </Text>
+          <Text>
+            it 
+          </Text>
+          <Text>
+            to 
+          </Text>
+          <Text>
+            GitHub. 
+          </Text>
+          <Text>
+            The 
+          </Text>
+          <Text>
+            schema 
+          </Text>
+          <Text>
+            will 
+          </Text>
+          <Text>
+            be 
+          </Text>
+          <Text>
+            the 
+          </Text>
+          <Text>
+            starting 
+          </Text>
+          <Text>
+            point 
+          </Text>
+          <Text>
+            of 
+          </Text>
+          <Text>
+            our 
+          </Text>
+          <Text>
+            reference 
+          </Text>
+          <Text>
+            documentation. 
+          </Text>
+        </Text>
+      </View>
+      <View
+        style={
+          Array [
+            Object {
+              "backgroundColor": "white",
+            },
+            undefined,
+            Object {
+              "marginTop": 10,
+            },
+          ]
+        }
+      >
+        <View
+          onLayout={[Function]}
+          style={
+            Array [
+              Object {
+                "backgroundColor": "transparent",
+                "flex": 1,
+                "flexDirection": "column",
+                "padding": 4,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                  "flexDirection": "row",
+                  "padding": 2,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={500}
+              onLayout={[Function]}
+              style={
+                Array [
+                  Object {
+                    "fontWeight": "bold",
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Board:
+            </Text>
+            <Text
+              numberOfLines={500}
+              style={
+                Array [
+                  Object {
+                    "paddingLeft": 5,
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Adaptive Card
+            </Text>
+          </View>
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                  "flexDirection": "row",
+                  "padding": 2,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={500}
+              onLayout={[Function]}
+              style={
+                Array [
+                  Object {
+                    "fontWeight": "bold",
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              List:
+            </Text>
+            <Text
+              numberOfLines={500}
+              style={
+                Array [
+                  Object {
+                    "paddingLeft": 5,
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Backlog
+            </Text>
+          </View>
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                  "flexDirection": "row",
+                  "padding": 2,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={500}
+              onLayout={[Function]}
+              style={
+                Array [
+                  Object {
+                    "fontWeight": "bold",
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Assigned to:
+            </Text>
+            <Text
+              numberOfLines={500}
+              style={
+                Array [
+                  Object {
+                    "paddingLeft": 5,
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Matt Hidinger
+            </Text>
+          </View>
+          <View
+            style={
+              Array [
+                Object {
+                  "backgroundColor": "transparent",
+                  "flexDirection": "row",
+                  "padding": 2,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={500}
+              onLayout={[Function]}
+              style={
+                Array [
+                  Object {
+                    "fontWeight": "bold",
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Due date:
+            </Text>
+            <Text
+              numberOfLines={500}
+              style={
+                Array [
+                  Object {
+                    "paddingLeft": 5,
+                  },
+                  Object {
+                    "fontSize": 14,
+                    "fontWeight": "400",
+                  },
+                ]
+              }
+            >
+              Not set
+            </Text>
+          </View>
+        </View>
+      </View>
+      <View>
+        <View
+          style={
+            Array [
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+                "paddingTop": 10,
+              },
+            ]
+          }
+        >
+          <View
+            accessible={true}
+            isTVSelectable={true}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              Object {
+                "flexGrow": 1,
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#1D9BF6",
+                    "borderRadius": 15,
+                    "flexGrow": 1,
+                    "justifyContent": "center",
+                    "marginBottom": 10,
+                    "marginRight": 10,
+                    "padding": 10,
+                  },
+                  Object {
+                    "flexDirection": "row",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "color": "white",
+                    },
+                    Object {
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                    },
+                  ]
+                }
+              >
+                Set due date
+              </Text>
+            </View>
+          </View>
+          <View
+            accessible={true}
+            isTVSelectable={true}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              Object {
+                "flexGrow": 1,
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#1D9BF6",
+                    "borderRadius": 15,
+                    "flexGrow": 1,
+                    "justifyContent": "center",
+                    "marginBottom": 10,
+                    "marginRight": 10,
+                    "padding": 10,
+                  },
+                  Object {
+                    "flexDirection": "row",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "color": "white",
+                    },
+                    Object {
+                      "fontSize": 14,
+                      "fontWeight": "400",
+                    },
+                  ]
+                }
+              >
+                Comment
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+</View>
+`;
+
+exports[`AdaptiveCard SnapShot 1`] = `<Text />`;
+
+exports[`Input SnapShot 1`] = `null`;

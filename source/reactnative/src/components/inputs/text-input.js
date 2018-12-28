@@ -81,6 +81,10 @@ export class InputText extends React.Component {
                     text = text.replace(/\D/g, Constants.EmptyString);
                 }
                     break;
+                default:{
+                    isError = false;
+                } 
+                break   
             }
 
             if (REGEX) {

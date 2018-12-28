@@ -32,7 +32,7 @@ export class NumberInput extends React.Component {
         this.parseHostConfig();
 
         return (
-				<Input 
+                <Input 
 					json={this.payload}
 					handleFocus={this.handleFocus}
 					handleBlur={this.handleBlur}
