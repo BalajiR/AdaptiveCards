@@ -15,38 +15,6 @@ const NUM_REGEX = /^[0-9][\.\d]*(,\d+)?$/;
 
 export class NumberInput extends React.Component {
 
-<<<<<<< HEAD
-    constructor(props) {
-        super(props);
-
-        this.payload = props.json;
-        this.id = Constants.EmptyString;
-        this.state = {
-            isError: false,
-            numberValue: Constants.EmptyString,
-        }
-    }
-
-    render() {
-
-        if (HostConfigManager.getHostConfig().supportsInteractivity === false) {
-            return null;
-        }
-        this.parseHostConfig();
-
-        return (
-                <Input 
-					json={this.payload}
-					handleFocus={this.handleFocus}
-					handleBlur={this.handleBlur}
-					textValueChanged={ (text, addInputItem) => 
-						{ this.onTextChanged(text, addInputItem) }}
-					value={this.state.numberValue} 
-					isError={this.state.isError}     
-				/>
-        );
-    }
-=======
 	constructor(props) {
 		super(props);
 
@@ -79,7 +47,6 @@ export class NumberInput extends React.Component {
 			/>
 		);
 	}
->>>>>>> b73e45fabd1a0c346e892276c0ee73c8cd9f3dec
 
     /**
      * @description Parse hostconfig specific to this element
