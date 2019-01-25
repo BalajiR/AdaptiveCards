@@ -7,7 +7,7 @@ import AdaptiveCard from '../src/adaptive-cards';
 let findById = function(tree, testID) {
     if(tree.props && tree.props.testID === testID) {
         return tree
-    }
+    } 
     if(tree.children && tree.children.length > 0)
     {
         let childs = tree.children

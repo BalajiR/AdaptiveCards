@@ -31,15 +31,18 @@
   ],
   "main": "./src/adaptive-cards",
   "devDependencies": {
-    "react": "16.6.0-alpha.8af6728",
-    "react-native": "0.57.4",
     "babel-jest": "23.6.0",
+    "babel-preset-react-native": "^4.0.1",
     "jest": "23.6.0",
     "metro-react-native-babel-preset": "0.48.1",
-    "react-test-renderer": "16.6.0-alpha.8af6728",
-    "babel-preset-react-native": "^4.0.1"
+    "react": "16.6.0-alpha.8af6728",
+    "react-native": "0.57.4",
+    "react-test-renderer": "16.6.0-alpha.8af6728"
   },
   "jest": {
     "preset": "react-native"
+  },
+  "dependencies": {
+    "react-dom": "^16.7.0"
   }
 }

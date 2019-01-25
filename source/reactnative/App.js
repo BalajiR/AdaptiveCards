@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import * as Enums from './src/utils/enums';
 import Visualizer from './src/visualizer/visualizer';
+import InputContext from './src/utils/context';
 
 export const myHostConfig =
 {
@@ -156,11 +157,26 @@ export const myHostConfig =
 
 
 export default class App extends React.Component {
+
+    inputArray = {};
+
+    addInputItem = (key, value) => {
+        this.inputArray[key] = value;
+    }
+
+    onExecuteAction = jest.fn;
+    isTransparent = true;
+    onParseError = jest.fn;
+    lang = 'en';
+
     render() {
         return (
-            <View style={styles.container}>
-                <Visualizer />
-            </View>
+            <InputContext.Provider value={{ lang, addInputItem, inputArray, onExecuteAction, isTransparent, onParseError }}>
+                <View style={styles.container}>
+                    <Visualizer />
+                </View>
+            </InputContext.Provider>
+
         );
     }
 }

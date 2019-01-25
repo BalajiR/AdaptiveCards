@@ -10,7 +10,7 @@ import {
 	TextInput
 } from 'react-native';
 
-import { InputContextConsumer } from '../../utils/context';
+import { InputContext } from '../../utils/context';
 import ElementWrapper from '../elements/element-wrapper';
 import { StyleManager } from '../../styles/style-config';
 import * as Constants from '../../utils/constants';
@@ -56,7 +56,7 @@ export class Input extends React.Component {
 		}
 
 		return (
-			<InputContextConsumer>
+			<InputContext.Consumer>
 				{({ addInputItem }) => (
 					<ElementWrapper json={this.payload}>
 						<TextInput
@@ -77,7 +77,7 @@ export class Input extends React.Component {
 						/>
 					</ElementWrapper>
 				)}
-			</InputContextConsumer>
+			</InputContext.Consumer>
 		);
 	}
 
