@@ -18,6 +18,7 @@ import { HostConfigManager } from '../../utils/host-config';
 import * as Utils from '../../utils/util';
 import * as Enums from '../../utils/enums';
 import { InputContextConsumer } from '../../utils/context';
+import { ContainerWrapper } from './';
 
 export class Container extends React.Component {
 	hostConfig = HostConfigManager.getHostConfig();
@@ -33,10 +34,11 @@ export class Container extends React.Component {
      * @description Parse the given payload and render the card accordingly
      */
 	parsePayload = (containerJson, onParseError) => {
-		if (!this.payload)
+		if (!this.payload) {
 			return this.renderedElement;
-		// parse elements
+		}
 
+		// parse elements
 		this.renderedElement.push(Registry.getManager().parseRegistryComponents(containerJson.items, onParseError));
 		return this.renderedElement;
 	}
@@ -57,11 +59,11 @@ export class Container extends React.Component {
 			<InputContextConsumer>
 				{({ onParseError }) =>
 					(
-						<View style={[styles.container, backgroundStyle]}>
-							<ElementWrapper json={containerJson} style={backgroundStyle}>
+						<ContainerWrapper json={this.payload} style={[styles.container, backgroundStyle]}>
+							<ElementWrapper json={containerJson} style={[backgroundStyle, {flexGrow: 0}]}>
 								{this.parsePayload(containerJson, onParseError)}
 							</ElementWrapper>
-						</View>
+						</ContainerWrapper>
 					)
 				}
 			</InputContextConsumer>
