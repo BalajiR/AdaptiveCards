@@ -29,6 +29,24 @@ export class TextColorDefinition {
 		this._default = color;
 	}
 }
+
+export class BackGroundColorDefinition {
+	_default = "#000000";
+
+	constructor(obj) {
+		if (obj) {
+			this._default = obj["default"] || this._default;
+		}
+	}
+	
+	get default() {
+		return Utils.hexToRGB(this._default);
+	}
+
+	set default(color) {
+		this._default = color;
+	}
+}
 export class HostConfigManager {
 
 	static hostConfig = null;
