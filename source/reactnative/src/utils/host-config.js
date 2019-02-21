@@ -47,6 +47,7 @@ export class BackGroundColorDefinition {
 		this._default = color;
 	}
 }
+
 export class HostConfigManager {
 
 	static hostConfig = null;
