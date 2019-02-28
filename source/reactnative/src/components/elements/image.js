@@ -18,6 +18,7 @@ import ElementWrapper from '../elements/element-wrapper';
 import { SelectAction } from '../actions';
 import { StyleManager } from '../../styles/style-config';
 import { InputContext } from '../../utils/context';
+import { InputContextConsumer } from '../../utils/context';
 
 const ContainResizeMode = 'contain';
 
@@ -334,9 +335,13 @@ export class Img extends React.Component {
 			style={wrapperComputedStyle}
 			onPageLayout={this.onPageLayoutHandler}>
         
+<<<<<<< HEAD
 			<Image style={this.sizeStyling}
 				accessible={true}
 				accessibilityLabel={'It is an Image'}
+=======
+			<Image style={imageComputedStyle}
+>>>>>>> 622187ec93dd96a036b9dd0beba11c214fa9b573
 				source={{ uri: imageUrl }} />
 		</ElementWrapper>);
 		
