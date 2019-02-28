@@ -51,7 +51,8 @@ export class Container extends React.Component {
 				{({ onParseError }) =>
 					(
 						<ContainerWrapper json={this.payload} style={[styles.container, backgroundStyle]}>
-							<ElementWrapper json={containerJson} style={[backgroundStyle, {flexGrow: 0}]}>
+							<ElementWrapper json={containerJson} style={[backgroundStyle, {flexGrow: 0}]}
+											accessibilityRole = {'button'}>
 								{this.parsePayload(containerJson, onParseError)}
 							</ElementWrapper>
 						</ContainerWrapper>

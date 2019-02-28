@@ -335,6 +335,8 @@ export class Img extends React.Component {
 			onPageLayout={this.onPageLayoutHandler}>
         
 			<Image style={this.sizeStyling}
+				accessible={true}
+				accessibilityLabel={'It is an Image'}
 				source={{ uri: imageUrl }} />
 		</ElementWrapper>);
 		

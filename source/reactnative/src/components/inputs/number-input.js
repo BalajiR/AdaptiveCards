@@ -35,6 +35,7 @@ export class NumberInput extends React.Component {
 		return (
 			<Input
 				json={this.payload}
+				accessible={true}
 				handleFocus={this.handleFocus}
 				handleBlur={this.handleBlur}
 				textValueChanged={(text, addInputItem) => { this.onTextChanged(text, addInputItem) }}

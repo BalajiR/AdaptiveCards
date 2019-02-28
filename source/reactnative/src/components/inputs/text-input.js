@@ -68,6 +68,7 @@ export class InputText extends React.Component {
 				isError={this.state.isError}
 				styleValue={this.styleValue}
 				textStyle={this.style}
+				accessible={true}
 			/>
 		);
 	}

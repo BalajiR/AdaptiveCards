@@ -115,8 +115,8 @@ export class ActionButton extends React.Component {
 	buttonContent = () => {
 		return (
 			<View
-				style={[
-					styles.button, this.styleConfig.actionIconFlex]}>
+				style={[styles.button, this.styleConfig.actionIconFlex]}
+				accessible={false} accessibilityLabel={this.title}>
 				{
 					!Utils.isNullOrEmpty(this.iconUrl) ?
 						<Image resizeMode="center"

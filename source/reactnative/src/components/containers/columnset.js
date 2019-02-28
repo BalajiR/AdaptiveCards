@@ -59,7 +59,8 @@ export class ColumnSet extends React.PureComponent {
 			styles.emphasisStyle : styles.defaultBGStyle;
 
 		var columnSetContent = (
-			<View style={[backgroundStyle, { flex: this.payload.columns.length }]}>
+			<View style={[backgroundStyle, { flex: this.payload.columns.length }]}
+				  accessibilityRole = {'button'}>
 				<ElementWrapper json={columnSetJson} style={backgroundStyle}>
 					{this.parsePayload(columnSetJson)}
 				</ElementWrapper>

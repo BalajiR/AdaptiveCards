@@ -26,6 +26,7 @@ export class TextBlock extends React.Component {
 		return (
 			<ElementWrapper json={payload} style={styles.textContainer}>
 				<Label
+				    accessible={true}
 					text={payload.text}
 					size={payload.size}
 					weight={payload.weight}

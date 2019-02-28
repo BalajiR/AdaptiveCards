@@ -53,7 +53,7 @@ export class ToggleInput extends React.Component {
 		const { toggleValue } = this.state;
 
 		return (
-			<ElementWrapper json={this.props.json} style={styles.toggleContainer}>
+			<ElementWrapper json={this.props.json} style={styles.toggleContainer} accessible={true}>
 				<Label
 					text={this.title}
 					wrap={true}

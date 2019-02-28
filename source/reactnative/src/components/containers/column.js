@@ -229,7 +229,8 @@ export class Column extends React.Component {
 			actionComponentProps = this.column.selectAction;
 		}
 
-		return <ContainerWrapper json={this.column} style={[containerViewStyle]}>
+		return <ContainerWrapper json={this.column} style={[containerViewStyle]}
+								 accessibilityRole = {'button'}>
 			<ActionComponent {...actionComponentProps}>
 				{separator && this.renderSeparator()}
 				{separator ?

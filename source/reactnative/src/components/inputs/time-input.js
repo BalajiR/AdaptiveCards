@@ -134,6 +134,7 @@ export class TimeInput extends React.Component {
 				maxDate={this.state.maxTime}
 				handleDateChange={this.handleTimeChange}
 				mode='time'
+				accessible={true}
 			/>
 		);
 	}

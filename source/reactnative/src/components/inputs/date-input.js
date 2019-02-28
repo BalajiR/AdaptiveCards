@@ -119,6 +119,7 @@ export class DateInput extends React.Component {
 
 		return (
 			<PickerInput
+				accessible={true}
 				json={this.payload}
 				value={this.state.value}
 				showPicker={this.showDatePicker}
