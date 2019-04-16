@@ -35,7 +35,7 @@ export default class AdaptiveCard extends React.Component {
 		if (this.props.isActionShowCard) {
 			this.cardModel = props.payload;
 		}else{
-			this.cardModel = ModelFactory.createElement(props.payload.parent,props.payload);
+			this.cardModel = ModelFactory.createElement(undefined,props.payload);
 		}
 		this.state = {
 			showErrors: false,
@@ -60,7 +60,7 @@ export default class AdaptiveCard extends React.Component {
 	toggleVisibilityForElementWithID = (idArray) => {
 		this.toggleCardModelObject(this.cardModel, [...idArray]);
 		this.setState({
-			payload: this.cardModel,
+			cardModel: this.cardModel,
 		})
 	}
 
