@@ -58,9 +58,9 @@ export default class AdaptiveCard extends React.Component {
 	}
 
 	toggleVisibilityForElementWithID = (idArray) => {
-		this.toggleObjectWithIDArray(this.payload, [...idArray]);
+		this.toggleCardModelObject(this.cardModel, [...idArray]);
 		this.setState({
-			payload: this.payload,
+			payload: this.cardModel,
 		})
 	}
 
@@ -93,7 +93,7 @@ export default class AdaptiveCard extends React.Component {
 		targetElements.forEach(target => {
 			if (target instanceof String || typeof target === 'string'){
 				if(target == object["id"]){
-					this.toggleObjectVisibility(object);
+					object.isVisible = !object.isVisible;
 					var index = targetElements.indexOf(object["id"]);
 					if (index !== -1) targetElements.splice(index, 1);
 					return
@@ -103,7 +103,7 @@ export default class AdaptiveCard extends React.Component {
 					if (!Utils.isNullOrEmpty(target["isVisible"])) {
 						object.isVisible = target["isVisible"]
 					} else {
-						this.toggleObjectVisibility(object);
+						object.isVisible = !object.isVisible;
 					}
 					var index = targetElements.indexOf(target);
 					if (index !== -1) targetElements.splice(index, 1);
@@ -113,16 +113,27 @@ export default class AdaptiveCard extends React.Component {
 		});
 	}
 
-	/**
-	 * @description Toggles the isVisible property of an Object
-	 * @param {Object} object - the object to be toggles
-	 */
-	toggleObjectVisibility = (object) => {
-		if (!Utils.isNullOrEmpty(object.isVisible)) {
-			object.isVisible = !object.isVisible
-		} else {
-			object.isVisible = false;
+	toggleCardModelObject = (object,idArrayValue) => {
+		if (idArrayValue.length === 0) return
+		if (object.hasOwnProperty('id')) {
+			this.checkTargetElementsForID(object, idArrayValue);
+			if (idArrayValue.length === 0) return
 		}
+		if((object.children !== undefined) && object.children.length !== 0 ){
+			object.children.forEach(element => {
+				if (idArrayValue.length === 0) return
+					this.toggleCardModelObject(element, idArrayValue);
+			});
+		}
+		if(object.type === 'AdaptiveCard'){
+			if((object.actions !== undefined) && object.actions.length !== 0 ){
+				object.actions.forEach(element => {
+					if (idArrayValue.length === 0) return
+						this.toggleCardModelObject(element, idArrayValue);
+				});
+			}
+		}
+		return;
 	}
 
 	/**

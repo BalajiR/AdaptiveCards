@@ -7,7 +7,7 @@ export class BaseModel {
     children = [];
     payload;
     selectAction;
-    isVisibile = true;
+    isVisible = true;
 
     constructor(parent, payload) {
         this.parent = parent;
@@ -20,8 +20,8 @@ export class BaseModel {
         if (payload.selectAction) {
             this.selectAction = payload.selectAction;
         }
-        if (payload.isVisibile){
-            this.isVisibile = payload.isVisibile;
+        if (payload.isVisible){
+            this.isVisible = payload.isVisible;
         }
     }
 }
