@@ -31,7 +31,8 @@ export class ShowCardActionModel extends BaseModel{
         super(parent, payload);
         this.title = payload.title;
         this.iconUrl = payload.iconUrl;
-        this.card = payload.card;
+        this.card = ModelFactory.createElement(this,payload.card);
+        this.children = [this.card];
     }
 }
 

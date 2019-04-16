@@ -116,7 +116,7 @@ export class ActionButton extends React.Component {
 	}
 
 	changeShowCardState = () => {
-		this.showCardHandler(this.payload.card);
+		this.showCardHandler(this.payload.children[0]);
 	}
 
 	parseHostConfig() {
