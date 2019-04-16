@@ -41,6 +41,8 @@ export class ModelFactory {
                 return new Models.SubmitActionModel(parent, payload);
             case ElementType.ActionShowCard:
                 return new Models.ShowCardActionModel(parent, payload);
+            case ElementType.ActionToggleVisibility:
+                return new Models.ToggleVisibilityActionModel(parent, payload);
             case ElementType.ActionSet:
                 return new Models.ActionSetModel(parent, payload);
             default:
