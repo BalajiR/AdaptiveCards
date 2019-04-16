@@ -20,6 +20,7 @@ import { SelectAction } from './components/actions';
 import ResourceInformation from './utils/resource-information';
 import { ContainerWrapper } from './components/containers';
 import { ThemeConfigManager } from './utils/theme-config';
+import { ModelFactory } from './models';
 
 export default class AdaptiveCard extends React.Component {
 
@@ -31,10 +32,10 @@ export default class AdaptiveCard extends React.Component {
 		super(props);
 
 		this.payload = props.payload;
-
+		this.cardModel = ModelFactory.createElement(props.payload.parent,props.payload);
 		this.state = {
 			showErrors: false,
-			payload: this.payload,
+			cardModel: this.cardModel,
 		}
 
 		// hostConfig
@@ -174,23 +175,22 @@ export default class AdaptiveCard extends React.Component {
 	 */
 	parsePayload = () => {
 		let children = [];
-		const { body } = this.state.payload;
 
-		if (!body)
+		if (this.state.cardModel.children.length === 0)
 			return children;
 
-		children = Registry.getManager().parseRegistryComponents(body, this.onParseError);
-		return children.map((ChildElement, index) => React.cloneElement(ChildElement, { containerStyle: this.state.payload.style, isFirst: index === 0 }));
+		children = Registry.getManager().parseRegistryComponents(this.state.cardModel.children, this.onParseError);
+		return children.map((ChildElement, index) => React.cloneElement(ChildElement, { containerStyle: this.state.cardModel.style, isFirst: index === 0 }));
 	}
 
 	getAdaptiveCardContent() {
 		var adaptiveCardContent =
 			(
-				<ContainerWrapper style={styles.container} json={this.state.payload}>
+				<ContainerWrapper style={styles.container} json={this.state.cardModel}>
 					<ScrollView alwaysBounceVertical={false} style={{ flexGrow: 0 }}>
 						{this.parsePayload()}
-						{!Utils.isNullOrEmpty(this.state.payload.actions) &&
-							<ActionWrapper actions={this.state.payload.actions} />}
+						{!Utils.isNullOrEmpty(this.state.cardModel.actions) &&
+							<ActionWrapper actions={this.state.cardModel.actions} />}
 					</ScrollView>
 				</ContainerWrapper>
 			);

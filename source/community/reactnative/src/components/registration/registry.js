@@ -102,11 +102,11 @@ export class Registry {
 		}
 	}
 	RequiredPropertySchema = {
-		'Container': { 'type': 'Container', 'items': 'Array' },
+		'Container': { 'type': 'Container', 'children': 'Array' },
 		'ColumnSet': { 'type': 'ColumnSet' },
 		'Column': { 'items': 'Array' },
-		'FactSet': { 'type': 'FactSet', 'facts': 'Array' },
-		'ImageSet': { 'type': 'ImageSet', 'images': 'Array' },
+		'FactSet': { 'type': 'FactSet', 'children': 'Array' },
+		'ImageSet': { 'type': 'ImageSet', 'children': 'Array' },
 
 		'TextBlock': { 'type': 'TextBlock' },
 		'Image': { 'type': 'Image', 'url': 'String' },
@@ -123,7 +123,7 @@ export class Registry {
 		'Action.ShowCard': { 'type': 'Action.ShowCard', 'card': 'Object' },
 		'Action.Submit': { 'type': 'Action.Submit' },
 		'Action.OpenUrl': { 'type': 'Action.OpenUrl', 'url': 'String' },
-		'ActionSet': { 'type': 'ActionSet', 'actions': 'Array' },
+		'ActionSet': { 'type': 'ActionSet' },
 	};
 
 	/**
@@ -144,6 +144,7 @@ export class Registry {
 			return parsedElement;
 		componentArray.map((element, index) => {
 			const Element = this.getComponentOfType(element.type);
+
 			if (Element) {
                 /**
                  * Validate the schema and invoke onParseError handler incase of any error.
