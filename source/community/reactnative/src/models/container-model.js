@@ -3,7 +3,19 @@ import { ModelFactory } from './model-factory';
 import { ElementType } from '../utils/enums'
 import {ImageModel} from './element-model'
 
-export class AdaptiveCardModel extends BaseModel {
+class BaseContainerModel extends BaseModel {
+    constructor(parent, payload) {
+        super(parent, payload);
+        if (payload.backgroundImage) {
+            this.backgroundImage = payload.backgroundImage;;
+        }
+        this.verticalContentAlignment = payload.verticalContentAlignment;
+        this.style = payload.style;
+        this.bleed = payload.bleed;
+    }
+}
+
+export class AdaptiveCardModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.AdaptiveCard;
@@ -14,25 +26,17 @@ export class AdaptiveCardModel extends BaseModel {
         this.actions = [];
         this.children.push(...ModelFactory.createGroup(this, payload.body));
         this.actions.push(...ModelFactory.createGroup(this, payload.actions));
-        if (payload.backgroundImage) {
-            this.backgroundImage = payload.backgroundImage;;
-        }
         this.show = true;
     }
 }
 
-export class ContainerModel extends BaseModel {
+export class ContainerModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.Container;
         this.children = [];
-        this.style = payload.style;
         this.children.push(...ModelFactory.createGroup(this, payload.items));
         this.height = payload.height;
-        this.verticalContentAlignment = payload.verticalContentAlignment;
-        if (payload.backgroundImage) {
-            this.backgroundImage = payload.backgroundImage;;
-        }
     }
 
     get items(){
@@ -40,7 +44,7 @@ export class ContainerModel extends BaseModel {
     }
 }
 
-export class ColumnSetModel extends BaseModel {
+export class ColumnSetModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.ColumnSet;
@@ -60,15 +64,13 @@ export class ColumnSetModel extends BaseModel {
     }
 }
 
-export class ColumnModel extends BaseModel {
+export class ColumnModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.Column;
         this.children = [];
         this.children.push(...ModelFactory.createGroup(this, payload.items));
-        this.style = payload.style;
         this.height = payload.height;
-        this.verticalContentAlignment = payload.verticalContentAlignment;
         if (payload.width) {
             if (payload.width === 'auto' || payload.width === 'stretch') {
                 this.width = payload.width;
@@ -80,9 +82,6 @@ export class ColumnModel extends BaseModel {
                 }
                 this.width = columnWidth;
             }
-        }
-        if (payload.backgroundImage) {
-            this.backgroundImage = payload.backgroundImage;
         }
     }
     get items() {
@@ -98,7 +97,7 @@ export class FactModel {
     }
 }
 
-export class FactSetModel extends BaseModel {
+export class FactSetModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.FactSet;
@@ -117,7 +116,7 @@ export class FactSetModel extends BaseModel {
     }
 }
 
-export class ImageSetModel extends BaseModel {
+export class ImageSetModel extends BaseContainerModel {
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.ImageSet;
@@ -137,16 +136,13 @@ export class ImageSetModel extends BaseModel {
     }
 }
 
-export class ActionSetModel extends BaseModel{
+export class ActionSetModel extends BaseContainerModel{
     constructor(parent, payload) {
         super(parent, payload);
         this.type = ElementType.ActionSet;
         this.children = [];
         this.children.push(...ModelFactory.createGroup(this, payload.actions));
         this.height = payload.height;
-        if (payload.backgroundImage) {
-            this.backgroundImage = payload.backgroundImage;;
-        }
     }
 
     get actions() {

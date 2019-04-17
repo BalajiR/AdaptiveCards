@@ -11,6 +11,8 @@ export class ModelFactory {
                 return new Models.ImageModel(parent, payload);
             case ElementType.TextBlock:
                 return new Models.TextBlockModel(parent, payload);
+            case ElementType.RichTextBlock:
+                return new Models.RichTextBlockModel(parent, payload);
             case ElementType.Column:
                 return new Models.ColumnModel(parent, payload);
             case ElementType.ColumnSet:

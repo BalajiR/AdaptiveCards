@@ -7,22 +7,15 @@ export class BaseInputModel extends BaseModel{
         this.placeholder = payload.placeholder;
         this.value = payload.value;
         this.inlineAction = payload.inlineAction;
+        this.validation = payload.validation;
     }
 }
 
 export class TextInputModel extends BaseInputModel {
     type = ElementType.TextInput;
-    isMultiline;
-    maxLength;
-    style;
 
     constructor(parent, payload) {
         super(parent, payload);
-
-        this.value = payload.value;
-        if (this.value === undefined) {
-            this.value = '';
-        }
         this.isMultiline = payload.isMultiline || false;
         this.maxLength = payload.maxLength;
         this.style = payload.style;
@@ -32,21 +25,9 @@ export class TextInputModel extends BaseInputModel {
 
 export class NumberInputModel extends BaseInputModel {
     type = ElementType.NumberInput;
-    max;
-    min;
 
     constructor(parent, payload) {
-        super(parent, payload);
-
-        this.value = payload.value;
-
-        if (this.value !== undefined) {
-            let str = this.value.toString();
-            this.value = str;
-        } else {
-            this.value = '';
-        }
-            
+        super(parent, payload);            
         this.max = payload.max;
         this.min = payload.min;
     }
@@ -54,13 +35,9 @@ export class NumberInputModel extends BaseInputModel {
 
 export class DateInputModel extends BaseInputModel {
     type = ElementType.DateInput;
-    max;
-    min;
 
     constructor(parent, payload) {
         super(parent, payload);
-
-        this.value = payload.value;
         this.max = payload.max;
         this.min = payload.min;
     }
@@ -68,13 +45,9 @@ export class DateInputModel extends BaseInputModel {
 
 export class TimeInputModel extends BaseInputModel {
     type = ElementType.TimeInput;
-    max;
-    min;
 
     constructor(parent, payload) {
         super(parent, payload);
-
-        this.value = payload.value;
         this.max = payload.max;
         this.min = payload.min;
     }
@@ -83,31 +56,25 @@ export class TimeInputModel extends BaseInputModel {
 
 export class ToggleInputModel extends BaseInputModel {
     type = ElementType.ToggleInput;
-    title;
-    valueOff;
-    valueOn;
 
     constructor(parent, payload) {
         super(parent, payload);
-
         this.title = payload.title;
         this.valueOff = payload.valueOff;
         this.valueOn = payload.valueOn;
         this.value = payload.value === payload.valueOn;
+        this.wrap = payload.wrap;
     }
 }
 
 export class ChoiceSetModel extends BaseInputModel {
     type = ElementType.ChoiceSetInput;
-    isMultiSelect;
-    style;
 
     constructor(parent, payload) {
         super(parent, payload);
-
         this.isMultiSelect = payload.isMultiSelect;
         this.style = payload.style;
-
+        this.wrap = payload.wrap;
         if (payload.choices) {
             payload.choices.forEach((item, index) => {
                 let choice = new ChoiceModel(this, item);
