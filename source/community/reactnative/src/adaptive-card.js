@@ -65,26 +65,6 @@ export default class AdaptiveCard extends React.Component {
 	}
 
 	/**
-	 * @description Toggles the visibility of the components by their ids recursively
-	 * @param {Object} object - the object to be searched for ids
-	 * @param {Array} idArrayValue - the array of IDs to be toggled
-	 */
-	toggleObjectWithIDArray = (object, idArrayValue) => {
-		if (idArrayValue.length === 0) return
-		if (object.hasOwnProperty('id')) {
-			this.checkTargetElementsForID(object, idArrayValue);
-			if (idArrayValue.length === 0) return
-		}
-		Object.keys(object).forEach(element => {
-			if (idArrayValue.length === 0) return
-			if (typeof object[element] == "object") {
-				this.toggleObjectWithIDArray(object[element], idArrayValue);
-			}
-		});
-		return;
-	}
-
-	/**
 	 * @description Checks the elements recursively to change the isVisible property
 	 * @param {Object} object - the object to be searched
 	 * @param {Array} targetElements - the array of target Ids to be toggled
@@ -113,6 +93,12 @@ export default class AdaptiveCard extends React.Component {
 		});
 	}
 
+	/**
+	 * @description Method to toggle the visibility of the component by looking in its children
+	 * @param {Object} object - the object to be searched for ids
+	 * @param {string} idValue - the id of the component to be toggled
+	 */
+
 	toggleCardModelObject = (object,idArrayValue) => {
 		if (idArrayValue.length === 0) return
 		if (object.hasOwnProperty('id')) {
@@ -125,6 +111,7 @@ export default class AdaptiveCard extends React.Component {
 					this.toggleCardModelObject(element, idArrayValue);
 			});
 		}
+		//Adaptive cards has actions array in addition to the body which is added as children
 		if(object.type === 'AdaptiveCard'){
 			if((object.actions !== undefined) && object.actions.length !== 0 ){
 				object.actions.forEach(element => {
@@ -135,29 +122,6 @@ export default class AdaptiveCard extends React.Component {
 		}
 		return;
 	}
-
-	/**
-	 * @description Conveniece method to toggle the visibility of the component by a single id recursively
-	 * @param {Object} object - the object to be searched for ids
-	 * @param {string} idValue - the id of the component to be toggled
-	 */
-	toggleObjectWithID = (object, idValue) => {
-		if (object.hasOwnProperty('id') && object["id"] == idValue) {
-			if (!Utils.isNullOrEmpty(object.isVisible)) {
-				object.isVisible = !object.isVisible
-			} else {
-				object.isVisible = false;
-			}
-			return;
-		}
-		Object.keys(object).forEach(element => {
-			if (typeof object[element] == "object") {
-				this.toggleObjectWithID(object[element], idValue);
-			}
-		});
-		return;
-	}
-
 
 	/**
 	 * @description Returns the resource information in the card elements as an array
