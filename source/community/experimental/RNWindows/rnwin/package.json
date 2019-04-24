@@ -1,0 +1,25 @@
+{
+  "name": "rnwin",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.6.0-alpha.8af6728",
+    "react-native": "0.57.4",
+    "react-native-video": "^4.4.1",
+    "react-native-windows": "0.57.1"
+  },
+  "devDependencies": {
+    "babel-jest": "24.7.1",
+    "jest": "24.7.1",
+    "metro-react-native-babel-preset": "0.53.1",
+    "react-test-renderer": "16.6.0-alpha.8af6728",
+    "rnpm-plugin-windows": "^0.2.9"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}
