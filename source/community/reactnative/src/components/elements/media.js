@@ -31,6 +31,7 @@ export class Media extends React.Component {
         this.payload = props.json;
         this.sources = this.getMediaSources(this.payload.sources);
         this.addResourceInformation = undefined;
+        this.onParseError = undefined;
         this.state = {
             currentSourceIndex: 0,
             onLoad: false,
@@ -91,7 +92,7 @@ export class Media extends React.Component {
             })
         } else {
             let error = { "error": Enums.ValidationError.InvalidPropertyValue, "message": `Not able to play the source` };
-            this.context.onParseError(error);
+            this.onParseError(error);
         }
     }
 
@@ -108,7 +109,8 @@ export class Media extends React.Component {
         return (
             <InputContextConsumer>
                 {({ onParseError, addResourceInformation }) => {
-                    this.addResourceInformation = addResourceInformation
+                    this.addResourceInformation = addResourceInformation;
+                    this.onParseError = onParseError;
 
                     return <ElementWrapper json={this.payload} isFirst={this.props.isFirst}>
                         <View style={styles.container}>
@@ -120,7 +122,7 @@ export class Media extends React.Component {
                                     controls={true}
                                     id={this.payload.id ? this.payload.id : "video"}
                                     paused={true}
-                                    onError={() => { this.videoError}}
+                                    onError={this.videoError}
                                     onLoad={this.videoLoadSuccess}
                                     style={styles.nativeVideoControls}
                                 />
