@@ -113,19 +113,19 @@ export class Media extends React.Component {
                     return <ElementWrapper json={this.payload} isFirst={this.props.isFirst}>
                         <View style={styles.container}>
                             {
-                                this.sources &&
+                                (this.sources && this.sources.length > 0) &&
                                 <Video
                                     source={this.sources[this.state.currentSourceIndex]}
                                     fullscreen={true}
                                     controls={true}
                                     id={this.payload.id ? this.payload.id : "video"}
-                                    paused={false}
-                                    onError={() => { this.videoError(onParseError) }}
+                                    paused={true}
+                                    onError={() => { this.videoError}}
                                     onLoad={this.videoLoadSuccess}
                                     style={styles.nativeVideoControls}
                                 />
                             }
-                            {(!this.state.onLoad && this.payload.poster) && <Image source={{ uri: this.payload.poster }} style={styles.nativeVideoControls}></Image>}
+                            {(!this.state.onLoad && this.payload.poster) && <Image source={{ uri: this.payload.poster }} resizeMode="contain" style={styles.nativeVideoControls}></Image>}
                         </View>
                     </ElementWrapper>
                 }}
