@@ -31,13 +31,13 @@
   ],
   "main": "./src/adaptive-card",
   "devDependencies": {
-    "babel-jest": "^24.7.1",
-    "jest": "^24.7.1",
+    "babel-jest": "24.7.1",
+    "jest": "24.7.1",
     "metro-react-native-babel-preset": "0.48.1",
     "react": "16.8.6",
-    "react-native": "^0.59.5",
+    "react-native": "0.59.5",
     "react-test-renderer": "16.6.0-alpha.8af6728",
-    "rnpm-plugin-windows": "^0.2.8"
+    "rnpm-plugin-windows": "0.2.8"
   },
   "dependencies": {
     "react-native-video": "^4.2.0",
