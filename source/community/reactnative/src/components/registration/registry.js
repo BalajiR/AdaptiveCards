@@ -196,7 +196,7 @@ export class Registry {
 				}
 				if (isValid) {
 					if (element.isVisible !== false) {
-						const elementKey = Utils.isNullOrEmpty(element.id) ? `${element.type}-${index}` : `${element.type}-${index}-${element.id}`;
+						const elementKey = `${element.type}-${element.id}`;
 						return (<Element json={element} key={elementKey} />);
 					}
 				}

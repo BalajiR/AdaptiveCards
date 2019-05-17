@@ -71,11 +71,13 @@ export class ModelFactory {
                 return ModelFactory.createElement(parent, payload.fallback);
             }
             else{
-                parent.isFallbackActivated = true;
                 return undefined;
-            }
-            
+            }  
         }
-        return undefined;
+        else{
+                parent.isFallbackActivated = true;
+                console.log("Parent value is changed here",parent);
+                return undefined;
+            }  
     }
 }

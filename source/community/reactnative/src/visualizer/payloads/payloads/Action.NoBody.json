@@ -29,6 +29,28 @@
   }
     ,
     {
+      "type": "Container",
+      "items": [
+          {
+              "type": "TextBlock",
+              "text": "This text block makes no sense without the graph below it."
+          },
+          {
+              "type": "Graph",
+              "xAxis": "Profit"
+          }
+      ],
+      "fallback": {
+          "type": "Container",
+          "items": [
+              {
+                  "type": "TextBlock",
+                  "text": "To view a graph, click this card"
+              }
+          ]
+      }
+  },
+    {
       "type": "ActionSet",
       "separator": true,
       "actions": [
