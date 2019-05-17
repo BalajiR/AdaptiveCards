@@ -171,6 +171,41 @@ export class Registry {
 		});
 		return parsedElement;
 	}
+
+	parseComponent = (element, onParseError) => {
+		const Element = this.getComponentOfType(element.type);
+
+			if (Element) {
+                /**
+                 * Validate the schema and invoke onParseError handler incase of any error.
+                 */
+				let isValid = true;
+				if (element.isFallbackActivated){
+					if(element.fallbackType == "drop"){
+						return null;
+					}else{
+						return this.parseComponent(element.fallback,onParseError);
+					}
+				}
+				for (var key in this.validateSchemaForType(element.type)) {
+					if (!element.hasOwnProperty(key)) {
+						let error = { "error": Enums.ValidationError.PropertyCantBeNull, "message": `Required property ${key} for ${element.type} is missing` };
+						onParseError(error);
+						isValid = false;
+					}
+				}
+				if (isValid) {
+					if (element.isVisible !== false) {
+						const elementKey = Utils.isNullOrEmpty(element.id) ? `${element.type}-${index}` : `${element.type}-${index}-${element.id}`;
+						return (<Element json={element} key={elementKey} />);
+					}
+				}
+			} else {
+				let error = { "error": Enums.ValidationError.UnknownElementType, "message": `Unknown Type ${element.type} encountered` };
+				onParseError(error);
+				return null;
+			}
+	}
 }
 
 

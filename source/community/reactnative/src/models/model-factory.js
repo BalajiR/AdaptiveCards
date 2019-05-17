@@ -1,5 +1,6 @@
 import * as Models from './index'
 import { ElementType } from '../utils/enums'
+import * as Utils from '../utils/util'
 
 export class ModelFactory {
     static createElement(parent, payload) {
@@ -48,7 +49,7 @@ export class ModelFactory {
             case ElementType.ActionSet:
                 return new Models.ActionSetModel(parent, payload);
             default:
-                return undefined;
+                return ModelFactory.checkForFallBack(parent,payload);
         }
     }
     static createGroup(parent, payload) {
@@ -62,5 +63,19 @@ export class ModelFactory {
             });
         }
         return modelGroup;
+    }
+
+    static checkForFallBack (parent, payload) {
+        if (!Utils.isNullOrEmpty(payload.fallback)){
+            if (payload.fallback !== "drop"){
+                return ModelFactory.createElement(parent, payload.fallback);
+            }
+            else{
+                parent.isFallbackActivated = true;
+                return undefined;
+            }
+            
+        }
+        return undefined;
     }
 }

@@ -1,4 +1,5 @@
 import * as Utils from '../utils/util';
+import { ModelFactory } from './model-factory'
 
 export class BaseModel {
     id;
@@ -8,6 +9,9 @@ export class BaseModel {
     payload;
     selectAction;
     isVisible = true;
+    isFallbackActivated = false;
+    fallback;
+    fallbackType;
 
     constructor(parent, payload) {
         this.parent = parent;
@@ -23,5 +27,13 @@ export class BaseModel {
         if (payload.isVisible){
             this.isVisible = payload.isVisible;
         }
+        if (payload.fallback){
+            if (payload.fallback == "drop"){
+                this.fallbackType = "drop"
+            }else{
+                this.fallback = ModelFactory.createElement(parent,payload.fallback);
+            }
+        }
+        
     }
 }

@@ -44,6 +44,13 @@ export class Column extends React.Component {
 		if (!this.column)
 			return children;
 
+			if (this.column.isFallbackActivated){
+				if(this.column.fallbackType == "drop"){
+					return null;
+				}else{
+					return Registry.getManager().parseComponent(this.column.fallback,this.context.onParseError);
+				}
+			}
 		// parse elements
 		if (!Utils.isNullOrEmpty(this.column.items) && (this.column.isVisible !== false)) {
 			children = Registry.getManager().parseRegistryComponents(this.column.items, this.context.onParseError);

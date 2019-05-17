@@ -36,6 +36,13 @@ export class Container extends React.Component {
 		if (!this.payload) {
 			return children;
 		}
+		if (this.payload.isFallbackActivated){
+			if(this.payload.fallbackType == "drop"){
+				return null;
+			}else{
+				return Registry.getManager().parseComponent(this.payload.fallback,this.context.onParseError);
+			}
+		}
 
 		children = Registry.getManager().parseRegistryComponents(this.payload.items, this.context.onParseError);
 		return children.map((ChildElement, index) => React.cloneElement(ChildElement, { containerStyle: this.payload.style, isFirst: index === 0 }));
