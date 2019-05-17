@@ -39,7 +39,7 @@ export class Container extends React.Component {
 		if (this.payload.isFallbackActivated){
 			if(this.payload.fallbackType == "drop"){
 				return null;
-			}else{
+			}else if(!Utils.isNullOrEmpty(element.fallback)){
 				return Registry.getManager().parseComponent(this.payload.fallback,this.context.onParseError);
 			}
 		}

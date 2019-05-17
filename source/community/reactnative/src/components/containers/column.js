@@ -47,7 +47,7 @@ export class Column extends React.Component {
 			if (this.column.isFallbackActivated){
 				if(this.column.fallbackType == "drop"){
 					return null;
-				}else{
+				}else if(!Utils.isNullOrEmpty(element.fallback)){
 					return Registry.getManager().parseComponent(this.column.fallback,this.context.onParseError);
 				}
 			}

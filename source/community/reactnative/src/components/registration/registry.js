@@ -143,36 +143,15 @@ export class Registry {
 		if (!componentArray)
 			return parsedElement;
 		componentArray.map((element, index) => {
-			const Element = this.getComponentOfType(element.type);
-
-			if (Element) {
-                /**
-                 * Validate the schema and invoke onParseError handler incase of any error.
-                 */
-				let isValid = true;
-				for (var key in this.validateSchemaForType(element.type)) {
-					if (!element.hasOwnProperty(key)) {
-						let error = { "error": Enums.ValidationError.PropertyCantBeNull, "message": `Required property ${key} for ${element.type} is missing` };
-						onParseError(error);
-						isValid = false;
-					}
-				}
-				if (isValid) {
-					if (element.isVisible !== false) {
-						const elementKey = Utils.isNullOrEmpty(element.id) ? `${element.type}-${index}` : `${element.type}-${index}-${element.id}`;
-						parsedElement.push(<Element json={element} key={elementKey} />);
-					}
-				}
-			} else {
-				let error = { "error": Enums.ValidationError.UnknownElementType, "message": `Unknown Type ${element.type} encountered` };
-				onParseError(error);
-				return null;
+			const currentElement = this.parseComponent(element,onParseError,index);
+			if (currentElement){
+				parsedElement.push(currentElement);
 			}
 		});
 		return parsedElement;
 	}
 
-	parseComponent = (element, onParseError) => {
+	parseComponent = (element, onParseError, index = 0) => {
 		const Element = this.getComponentOfType(element.type);
 
 			if (Element) {
@@ -183,7 +162,7 @@ export class Registry {
 				if (element.isFallbackActivated){
 					if(element.fallbackType == "drop"){
 						return null;
-					}else{
+					}else if(!Utils.isNullOrEmpty(element.fallback)){
 						return this.parseComponent(element.fallback,onParseError);
 					}
 				}
@@ -196,7 +175,7 @@ export class Registry {
 				}
 				if (isValid) {
 					if (element.isVisible !== false) {
-						const elementKey = `${element.type}-${element.id}`;
+						const elementKey = Utils.isNullOrEmpty(element.id) ? `${element.type}-${index}` : `${element.type}-${index}-${element.id}`;
 						return (<Element json={element} key={elementKey} />);
 					}
 				}
