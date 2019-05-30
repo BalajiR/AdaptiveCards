@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "AdaptiveCards.Rendering.Uwp.h"
@@ -70,13 +72,13 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_Language(_Outptr_ HSTRING* language) { return AdaptiveTextElement::get_Language(language); }
         IFACEMETHODIMP put_Language(_In_ HSTRING language) { return AdaptiveTextElement::put_Language(language); }
 
-        IFACEMETHODIMP get_FontStyle(_Out_ ABI::AdaptiveNamespace::FontStyle* style)
+        IFACEMETHODIMP get_FontType(_Out_ ABI::AdaptiveNamespace::FontType* type)
         {
-            return AdaptiveTextElement::get_FontStyle(style);
+            return AdaptiveTextElement::get_FontType(type);
         }
-        IFACEMETHODIMP put_FontStyle(ABI::AdaptiveNamespace::FontStyle style)
+        IFACEMETHODIMP put_FontType(ABI::AdaptiveNamespace::FontType type)
         {
-            return AdaptiveTextElement::put_FontStyle(style);
+            return AdaptiveTextElement::put_FontType(type);
         }
 
         // IAdaptiveCardElement
@@ -105,12 +107,6 @@ namespace AdaptiveNamespace
 
         IFACEMETHODIMP get_Id(_Outptr_ HSTRING* id) { return AdaptiveCardElementBase::get_Id(id); }
         IFACEMETHODIMP put_Id(_In_ HSTRING id) { return AdaptiveCardElementBase::put_Id(id); }
-
-        IFACEMETHODIMP get_MinHeight(_Out_ UINT32* minHeight)
-        {
-            return AdaptiveCardElementBase::get_MinHeight(minHeight);
-        }
-        IFACEMETHODIMP put_MinHeight(UINT32 minHeight) { return AdaptiveCardElementBase::put_MinHeight(minHeight); }
 
         IFACEMETHODIMP get_FallbackType(_Out_ ABI::AdaptiveNamespace::FallbackType* fallback)
         {
@@ -143,6 +139,12 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP put_AdditionalProperties(_In_ ABI::Windows::Data::Json::IJsonObject* value)
         {
             return AdaptiveCardElementBase::put_AdditionalProperties(value);
+        }
+
+        IFACEMETHODIMP MeetsRequirements(_In_ ABI::AdaptiveNamespace::IAdaptiveFeatureRegistration* featureRegistration,
+                                         _Out_ boolean* value)
+        {
+            return AdaptiveCardElementBase::MeetsRequirements(featureRegistration, value);
         }
 
         IFACEMETHODIMP ToJson(_COM_Outptr_ ABI::Windows::Data::Json::IJsonObject** result)

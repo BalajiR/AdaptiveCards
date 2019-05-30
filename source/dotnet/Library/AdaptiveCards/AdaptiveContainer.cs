@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -44,6 +46,7 @@ namespace AdaptiveCards
         [XmlElement(typeof(AdaptiveChoiceSetInput))]
         [XmlElement(typeof(AdaptiveToggleInput))]
         [XmlElement(typeof(AdaptiveMedia))]
+        [XmlElement(typeof(AdaptiveActionSet))]
 #endif
         public List<AdaptiveElement> Items { get; set; } = new List<AdaptiveElement>();
 

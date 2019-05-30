@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 import * as Adaptive from "adaptivecards";
 import * as Controls from "adaptivecards-controls";
 import { DraggableElement } from "./draggable-element";
@@ -82,6 +84,7 @@ export class CardElementPeerRegistry extends DesignerPeerRegistry<CardElementTyp
         this.registerPeer(Adaptive.FactSet, DesignerPeers.FactSetPeer, DesignerPeerCategory.Containers, "acd-icon-factSet");
 
         this.registerPeer(Adaptive.TextBlock, DesignerPeers.TextBlockPeer, DesignerPeerCategory.Elements, "acd-icon-textBlock");
+        this.registerPeer(Adaptive.RichTextBlock, DesignerPeers.RichTextBlockPeer, DesignerPeerCategory.Elements, "acd-icon-richTextBlock");
         this.registerPeer(Adaptive.Image, DesignerPeers.ImagePeer, DesignerPeerCategory.Elements, "acd-icon-image");
         this.registerPeer(Adaptive.Media, DesignerPeers.MediaPeer, DesignerPeerCategory.Elements, "acd-icon-media");
         this.registerPeer(Adaptive.ActionSet, DesignerPeers.ActionSetPeer, DesignerPeerCategory.Elements, "acd-icon-actionSet");
@@ -124,6 +127,7 @@ export class ActionPeerRegistry extends DesignerPeerRegistry<ActionType, ActionP
         this.registerPeer(Adaptive.SubmitAction, DesignerPeers.SubmitActionPeer, DesignerPeerCategory.Actions, "acd-icon-actionSubmit");
         this.registerPeer(Adaptive.OpenUrlAction, DesignerPeers.OpenUrlActionPeer, DesignerPeerCategory.Actions, "acd-icon-actionOpenUrl");
         this.registerPeer(Adaptive.ShowCardAction, DesignerPeers.ShowCardActionPeer, DesignerPeerCategory.Actions, "acd-icon-actionShowCard");
+        this.registerPeer(Adaptive.ToggleVisibilityAction, DesignerPeers.ToggleVisibilityActionPeer, DesignerPeerCategory.Actions, "acd-icon-actionToggleVisibility");
     }
 
     createPeerInstance(designerSurface: CardDesignerSurface, parent: DesignerPeers.DesignerPeer, action: Adaptive.Action): DesignerPeers.ActionPeer {
@@ -253,12 +257,8 @@ export class CardDesignerSurface {
         this._cardHost.innerHTML = "";
 
         if (this.card) {
-            let validationErrors = this.card.validate();
-
-            let allErrors = validationErrors.concat(this._lastParseErrors);
-
             if (this.onCardValidated) {
-                this.onCardValidated(allErrors);
+                this.onCardValidated(this._lastParseErrors, this.card.validateProperties());
             }
 
             let renderedCard = this.card.render();
@@ -471,7 +471,7 @@ export class CardDesignerSurface {
         this.parentElement.appendChild(rootElement);
     }
 
-    onCardValidated: (errors: Array<Adaptive.IValidationError>) => void;
+    onCardValidated: (parseErrors: Array<Adaptive.IValidationError>, validationResults: Adaptive.ValidationResults) => void;
     onSelectedPeerChanged: (peer: DesignerPeers.DesignerPeer) => void;
     onLayoutUpdated: (isFullRefresh: boolean) => void;
 
@@ -485,6 +485,16 @@ export class CardDesignerSurface {
 
     findDropTarget(pointerPosition: IPoint, peer: DesignerPeers.DesignerPeer): DesignerPeers.DesignerPeer {
         return this.internalFindDropTarget(pointerPosition, this._rootPeer, peer);
+    }
+
+    findPeer(cardObject: Adaptive.CardObject) {
+        for (let peer of this._allPeers) {
+            if (peer.getCardObject() === cardObject) {
+                return peer;
+            }
+        }
+
+        return undefined;
     }
 
     beginUpdate() {

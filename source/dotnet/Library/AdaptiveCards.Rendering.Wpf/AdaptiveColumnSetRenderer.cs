@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,7 +15,8 @@ namespace AdaptiveCards.Rendering.Wpf
 
             // Keep track of ContainerStyle.ForegroundColors before Container is rendered
             var parentRenderArgs = context.RenderArgs;
-            var elementRenderArgs = new AdaptiveRenderArgs(parentRenderArgs);
+            // This is the renderArgs that will be the base for all the columns renderArgs
+            var childrenRenderArgs = new AdaptiveRenderArgs(parentRenderArgs);
 
             Border border = new Border();
             border.Child = uiColumnSet;
@@ -28,63 +31,63 @@ namespace AdaptiveCards.Rendering.Wpf
                 var columnSetStyle = context.Config.ContainerStyles.GetContainerStyleConfig(columnSet.Style);
 
                 border.Background = context.GetColorBrush(columnSetStyle.BackgroundColor);
-                elementRenderArgs.ForegroundColors = columnSetStyle.ForegroundColors;
+                childrenRenderArgs.ForegroundColors = columnSetStyle.ForegroundColors;
             }
 
-            elementRenderArgs.ParentStyle = (inheritsStyleFromParent) ? parentRenderArgs.ParentStyle : columnSet.Style.Value;
-            elementRenderArgs.HasParentWithPadding = (hasPadding || parentRenderArgs.HasParentWithPadding);
-            
+            childrenRenderArgs.ParentStyle = (inheritsStyleFromParent) ? parentRenderArgs.ParentStyle : columnSet.Style.Value;
+
             for (int i = 0; i < columnSet.Columns.Count; ++i)
             {
                 AdaptiveColumn column = columnSet.Columns[i];
 
-                var columnRenderArgs = new AdaptiveRenderArgs(elementRenderArgs);
-                if (columnSet.Columns.Count == 1)
+                var childRenderArgs = new AdaptiveRenderArgs(childrenRenderArgs);
+                // Reset up and down bleed for columns as that behaviour shouldn't be changed
+                childRenderArgs.BleedDirection |= (BleedDirection.BleedUp | BleedDirection.BleedDown);
+
+                if (i != 0)
                 {
-                    columnRenderArgs.ColumnRelativePosition = ColumnPositionEnum.Only;
+                    // Only the first column can bleed to the left
+                    childRenderArgs.BleedDirection &= ~BleedDirection.BleedLeft;
                 }
-                else
+
+                if (i != columnSet.Columns.Count - 1)
                 {
-                    if (i == 0)
-                    {
-                        columnRenderArgs.ColumnRelativePosition = ColumnPositionEnum.Begin;
-                    }
-                    else if (i == (columnSet.Columns.Count - 1))
-                    {
-                        columnRenderArgs.ColumnRelativePosition = ColumnPositionEnum.End;
-                    }
-                    else
-                    {
-                        columnRenderArgs.ColumnRelativePosition = ColumnPositionEnum.Intermediate;
-                    }
+                    // Only the last column can bleed to the right
+                    childRenderArgs.BleedDirection &= ~BleedDirection.BleedRight;
                 }
-                context.RenderArgs = columnRenderArgs;
+
+                context.RenderArgs = childRenderArgs;
 
                 FrameworkElement uiContainer = context.Render(column);
 
-                // Add vertical Seperator
-                if (uiColumnSet.ColumnDefinitions.Count > 0)
+                TagContent tag = null;
+
+                // Add vertical Separator
+                if (uiColumnSet.ColumnDefinitions.Count > 0 && (column.Separator || column.Spacing != AdaptiveSpacing.None))
                 {
-                    if (column.Separator || column.Spacing != AdaptiveSpacing.None)
+                    var uiSep = new Grid();
+                    uiSep.Style = context.GetStyle($"Adaptive.VerticalSeparator");
+
+                    uiSep.VerticalAlignment = VerticalAlignment.Stretch;
+
+                    int spacing = context.Config.GetSpacing(column.Spacing);
+                    uiSep.Margin = new Thickness(spacing / 2.0, 0, spacing / 2.0, 0);
+
+                    uiSep.Width = context.Config.Separator.LineThickness;
+                    if (column.Separator && context.Config.Separator.LineColor != null)
                     {
-
-                        var uiSep = new Grid();
-                        uiSep.Style = context.GetStyle($"Adaptive.VerticalSeparator");
-
-                        uiSep.VerticalAlignment = VerticalAlignment.Stretch;
-
-                        int spacing = context.Config.GetSpacing(column.Spacing);
-                        uiSep.Margin = new Thickness(spacing / 2.0, 0, spacing / 2.0, 0);
-
-                        uiSep.Width = context.Config.Separator.LineThickness;
-                        if (column.Separator && context.Config.Separator.LineColor != null)
-                            uiSep.Background = context.GetColorBrush(context.Config.Separator.LineColor);
-
-                        uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-                        Grid.SetColumn(uiSep, uiColumnSet.ColumnDefinitions.Count - 1);
-                        uiColumnSet.Children.Add(uiSep);
+                        uiSep.Background = context.GetColorBrush(context.Config.Separator.LineColor);
                     }
 
+                    tag = new TagContent(uiSep, uiColumnSet);
+
+                    uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                    Grid.SetColumn(uiSep, uiColumnSet.ColumnDefinitions.Count - 1);
+                    uiColumnSet.Children.Add(uiSep);
+                }
+                else
+                {
+                    tag = new TagContent(null, uiColumnSet);
                 }
 
                 // do some sizing magic using the magic GridUnitType.Star
@@ -93,40 +96,57 @@ namespace AdaptiveCards.Rendering.Wpf
 #pragma warning disable CS0618 // Type or member is obsolete
                     width = column.Size?.ToLower();
 #pragma warning restore CS0618 // Type or member is obsolete
+
+                ColumnDefinition columnDefinition = null;
+
                 if (width == null || width == AdaptiveColumnWidth.Stretch.ToLower())
-                    uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                {
+                    columnDefinition = new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) };
+                }
                 else if (width == AdaptiveColumnWidth.Auto.ToLower())
-                    uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                {
+                    columnDefinition = new ColumnDefinition() { Width = GridLength.Auto };
+                }
                 else
                 {
                     if (double.TryParse(width, out double val) && val >= 0)
+                    {
                         // Weighted proportion (number only)
-                        uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(val, GridUnitType.Star) });
-                    else if (width.EndsWith("px") && double.TryParse(width.Substring(0, width.Length-2), out double pxVal) && pxVal >= 0)
+                        columnDefinition = new ColumnDefinition() { Width = new GridLength(val, GridUnitType.Star) };
+                    }
+                    else if (width.EndsWith("px") && double.TryParse(width.Substring(0, width.Length - 2), out double pxVal) && pxVal >= 0)
+                    {
                         // Exact pixel (number followed by "px")
-                        uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength((int)pxVal, GridUnitType.Pixel) });
+                        columnDefinition = new ColumnDefinition() { Width = new GridLength((int)pxVal, GridUnitType.Pixel) };
+                    }
                     else
-                        uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                    {
+                        columnDefinition = new ColumnDefinition() { Width = GridLength.Auto };
+                    }
                 }
 
+                // Store the column definition in the tag so we can toggle the visibility later
+                tag.ColumnDefinition = columnDefinition;
+                tag.ViewIndex = uiColumnSet.ColumnDefinitions.Count;
+
+                uiColumnSet.ColumnDefinitions.Add(columnDefinition);
+
+                uiContainer.Tag = tag;
+                
                 Grid.SetColumn(uiContainer, uiColumnSet.ColumnDefinitions.Count - 1);
                 uiColumnSet.Children.Add(uiContainer);
+
+                context.SetVisibility(uiContainer, column.IsVisible, tag);
             }
 
-            if (columnSet.SelectAction != null)
-            {
-                return context.RenderSelectAction(columnSet.SelectAction, border);
-            }
-
-            if(!columnSet.IsVisible)
-            {
-                uiColumnSet.Visibility = Visibility.Collapsed;
-            }
+            context.ResetSeparatorVisibilityInsideContainer(uiColumnSet);
 
             // Revert context's value to that of outside the Container
             context.RenderArgs = parentRenderArgs;
 
-            return border;
+            uiColumnSet.MinHeight = columnSet.PixelMinHeight;
+
+            return RendererUtil.ApplySelectAction(border, columnSet, context);
         }
     }
 }

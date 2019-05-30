@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +50,7 @@ namespace AdaptiveCards.Test
         }
 
         [TestMethod]
-        public void TestSkippingUnknownElements()
+        public void TestKeepingUnknownElements()
         {
             var json = @"{
   ""type"": ""AdaptiveCard"",
@@ -78,9 +80,19 @@ namespace AdaptiveCards.Test
             var result = AdaptiveCard.FromJson(json);
 
             Assert.IsNotNull(result.Card);
-            Assert.AreEqual(1, result.Card.Body.Count);
-            Assert.AreEqual(1, result.Card.Actions.Count);
+            Assert.AreEqual(2, result.Card.Body.Count);
+            Assert.AreEqual(2, result.Card.Actions.Count);
             Assert.AreEqual(2, result.Warnings.Count);
+
+            // check first unknown element
+            var unknown_elem = (AdaptiveUnknownElement)result.Card.Body[0];
+            Assert.AreEqual(unknown_elem.Type, "IDunno");
+            Assert.AreEqual(unknown_elem.AdditionalProperties["text"], "Hello");
+
+            // check second unknown element
+            var unknown_action = result.Card.Actions[0];
+            Assert.AreEqual(unknown_action.Type, "Action.IDunno");
+            Assert.AreEqual(unknown_action.Title, "Action 1");
         }
 
         [TestMethod]
@@ -133,6 +145,57 @@ namespace AdaptiveCards.Test
     }
   ],
   ""-ms-test"": ""Card extension data""
+}";
+            Assert.AreEqual(expected, card.ToJson());
+
+            var deserializedCard = AdaptiveCard.FromJson(expected).Card;
+            Assert.AreEqual(expected, deserializedCard.ToJson());
+        }
+
+        [TestMethod]
+        public void TestSerializingUnknownItems()
+        {
+            var card = new AdaptiveCard("1.2")
+            {
+                Body =
+                {
+                    new AdaptiveUnknownElement()
+                    {
+                        Type = "Graph",
+                        AdditionalProperties =
+                        {
+                            ["UnknownProperty1"] = "UnknownValue1"
+                        }
+                    }
+                },
+                Actions =
+                {
+                    new AdaptiveUnknownAction()
+                    {
+                        Type = "Action.Graph",
+                        AdditionalProperties =
+                        {
+                            ["UnknownProperty2"] = "UnknownValue2"
+                        }
+                    }
+                }
+            };
+
+            var expected = @"{
+  ""type"": ""AdaptiveCard"",
+  ""version"": ""1.2"",
+  ""body"": [
+    {
+      ""type"": ""Graph"",
+      ""UnknownProperty1"": ""UnknownValue1""
+    }
+  ],
+  ""actions"": [
+    {
+      ""type"": ""Action.Graph"",
+      ""UnknownProperty2"": ""UnknownValue2""
+    }
+  ]
 }";
             Assert.AreEqual(expected, card.ToJson());
 
@@ -425,19 +488,19 @@ namespace AdaptiveCards.Test
         public void BackgroundImage()
         {
             var card = new AdaptiveCard("1.2");
-            card.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/1.png", AdaptiveBackgroundImageMode.Repeat, AdaptiveHorizontalAlignment.Right, AdaptiveVerticalAlignment.Bottom);
+            card.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/1.png", AdaptiveImageFillMode.Repeat, AdaptiveHorizontalAlignment.Right, AdaptiveVerticalAlignment.Bottom);
 
             var columnSet = new AdaptiveColumnSet();
             var column1 = new AdaptiveColumn();
-            column1.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/1.png", AdaptiveBackgroundImageMode.RepeatVertically, AdaptiveHorizontalAlignment.Center, AdaptiveVerticalAlignment.Top);
+            column1.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/1.png", AdaptiveImageFillMode.RepeatVertically, AdaptiveHorizontalAlignment.Center, AdaptiveVerticalAlignment.Top);
             columnSet.Columns.Add(column1);
             var column2 = new AdaptiveColumn();
-            column2.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/2.png", AdaptiveBackgroundImageMode.Stretch, AdaptiveHorizontalAlignment.Right, AdaptiveVerticalAlignment.Bottom);
+            column2.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/2.png", AdaptiveImageFillMode.Cover, AdaptiveHorizontalAlignment.Right, AdaptiveVerticalAlignment.Bottom);
             columnSet.Columns.Add(column2);
             card.Body.Add(columnSet);
 
             var container1 = new AdaptiveContainer();
-            container1.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/2.png", AdaptiveBackgroundImageMode.RepeatHorizontally, AdaptiveHorizontalAlignment.Left, AdaptiveVerticalAlignment.Center);
+            container1.BackgroundImage = new AdaptiveBackgroundImage("http://adaptivecards.io/content/cats/2.png", AdaptiveImageFillMode.RepeatHorizontally, AdaptiveHorizontalAlignment.Left, AdaptiveVerticalAlignment.Center);
             card.Body.Add(container1);
 
             var container2 = new AdaptiveContainer();
@@ -449,7 +512,7 @@ namespace AdaptiveCards.Test
   ""version"": ""1.2"",
   ""backgroundImage"": {
     ""url"": ""http://adaptivecards.io/content/cats/1.png"",
-    ""mode"": ""repeat"",
+    ""fillMode"": ""repeat"",
     ""horizontalAlignment"": ""right"",
     ""verticalAlignment"": ""bottom""
   },
@@ -461,7 +524,7 @@ namespace AdaptiveCards.Test
           ""type"": ""Column"",
           ""backgroundImage"": {
             ""url"": ""http://adaptivecards.io/content/cats/1.png"",
-            ""mode"": ""repeatVertically"",
+            ""fillMode"": ""repeatVertically"",
             ""horizontalAlignment"": ""center""
           },
           ""items"": []
@@ -481,7 +544,7 @@ namespace AdaptiveCards.Test
       ""type"": ""Container"",
       ""backgroundImage"": {
         ""url"": ""http://adaptivecards.io/content/cats/2.png"",
-        ""mode"": ""repeatHorizontally"",
+        ""fillMode"": ""repeatHorizontally"",
         ""verticalAlignment"": ""center""
       },
       ""items"": []
@@ -502,32 +565,34 @@ namespace AdaptiveCards.Test
             var card = new AdaptiveCard("1.2");
 
             var richTB = new AdaptiveRichTextBlock();
-            richTB.Wrap = true;
-            richTB.MaxLines = 3;
             richTB.HorizontalAlignment = AdaptiveHorizontalAlignment.Center;
 
-            // Build First Paragraph
-            var paragraph1 = new AdaptiveParagraph();
+            // Build text runs
+            var textRun1 = new AdaptiveTextRun("Start the rich text block ");
+            richTB.Inlines.Add(textRun1);
 
-            var textRun1 = new AdaptiveTextRun("Start the first paragraph ");
-            paragraph1.Inlines.Add(textRun1);
-
-            var textRun2 = new AdaptiveTextRun("with some cool looking stuff");
+            var textRun2 = new AdaptiveTextRun("with some cool looking stuff. ");
             textRun2.Color = AdaptiveTextColor.Accent;
-            textRun2.FontStyle = AdaptiveFontStyle.Monospace;
+            textRun2.FontType = AdaptiveFontType.Monospace;
             textRun2.IsSubtle = true;
+            textRun2.Italic = true;
+            textRun2.Strikethrough = true;
+            textRun2.Highlight = true;
             textRun2.Size = AdaptiveTextSize.Large;
             textRun2.Weight = AdaptiveTextWeight.Bolder;
-            paragraph1.Inlines.Add(textRun2);
+            richTB.Inlines.Add(textRun2);
 
-            richTB.Paragraphs.Add(paragraph1);
-
-            // Build Second Paragraph (Empty inlines)
-            var paragraph2 = new AdaptiveParagraph();
-            richTB.Paragraphs.Add(paragraph2);
+            var textRun3 = new AdaptiveTextRun("This run has a link!");
+            textRun3.SelectAction = new AdaptiveOpenUrlAction()
+            {
+                Title = "Open URL",
+                UrlString = "http://adaptivecards.io/"
+            };
+            richTB.Inlines.Add(textRun3);
 
             card.Body.Add(richTB);
 
+            // Indentation needs to be kept as-is to match the result of card.ToJson
             var expected = @"{
   ""type"": ""AdaptiveCard"",
   ""version"": ""1.2"",
@@ -535,28 +600,31 @@ namespace AdaptiveCards.Test
     {
       ""type"": ""RichTextBlock"",
       ""horizontalAlignment"": ""center"",
-      ""wrap"": true,
-      ""maxLines"": 3,
-      ""paragraphs"": [
+      ""inlines"": [
         {
-          ""inlines"": [
-            {
-              ""type"": ""TextRun"",
-              ""text"": ""Start the first paragraph ""
-            },
-            {
-              ""type"": ""TextRun"",
-              ""size"": ""large"",
-              ""weight"": ""bolder"",
-              ""color"": ""accent"",
-              ""isSubtle"": true,
-              ""text"": ""with some cool looking stuff"",
-              ""fontStyle"": ""monospace""
-            }
-          ]
+          ""type"": ""TextRun"",
+          ""text"": ""Start the rich text block ""
         },
         {
-          ""inlines"": []
+          ""type"": ""TextRun"",
+          ""size"": ""large"",
+          ""weight"": ""bolder"",
+          ""color"": ""accent"",
+          ""isSubtle"": true,
+          ""italic"": true,
+          ""strikethrough"": true,
+          ""highlight"": true,
+          ""text"": ""with some cool looking stuff. "",
+          ""fontType"": ""monospace""
+        },
+        {
+          ""type"": ""TextRun"",
+          ""text"": ""This run has a link!"",
+          ""selectAction"": {
+            ""type"": ""Action.OpenUrl"",
+            ""url"": ""http://adaptivecards.io/"",
+            ""title"": ""Open URL""
+          }
         }
       ]
     }
@@ -569,55 +637,63 @@ namespace AdaptiveCards.Test
         public void RichTextBlockFromJson()
         {
             var json = @"{
-  ""type"": ""AdaptiveCard"",
-  ""version"": ""1.2"",
-  ""body"": [
-    {
-      ""type"": ""RichTextBlock"",
-      ""horizontalAlignment"": ""center"",
-      ""wrap"": true,
-      ""maxLines"": 3,
-      ""paragraphs"": [
-        {
-          ""inlines"": [
-            {
-              ""type"": ""TextRun"",
-              ""text"": ""Start the first paragraph ""
-            },
-            {
-              ""type"": ""TextRun"",
-              ""size"": ""large"",
-              ""weight"": ""bolder"",
-              ""color"": ""accent"",
-              ""isSubtle"": true,
-              ""text"": ""with some cool looking stuff"",
-              ""fontStyle"": ""monospace""
-            }
-          ]
-        },
-        {
-          ""inlines"": []
-        }
-      ]
-    }
-  ]
-}";
+              ""type"": ""AdaptiveCard"",
+              ""version"": ""1.2"",
+              ""body"": [
+                {
+                  ""type"": ""RichTextBlock"",
+                  ""horizontalAlignment"": ""center"",
+                  ""inlines"": [
+                      {
+                        ""type"": ""TextRun"",
+                        ""text"": ""Start the rich text block ""
+                      },
+                      {
+                          ""type"": ""TextRun"",
+                          ""size"": ""large"",
+                          ""weight"": ""bolder"",
+                          ""color"": ""accent"",
+                          ""isSubtle"": true,
+                          ""italic"": true,
+                          ""highlight"": true,
+                          ""strikethrough"": true,
+                          ""text"": ""with some cool looking stuff. "",
+                          ""fontStyle"": ""monospace""
+                      },
+                      {
+                        ""type"": ""TextRun"",
+                        ""text"": ""This run has a link!"",
+                        ""selectAction"": {
+                          ""type"": ""Action.OpenUrl"",
+                          ""url"": ""http://adaptivecards.io/"",
+                          ""title"": ""Open URL""
+                      }
+                  }
+                  ]
+                }
+              ]
+            }";
 
             var card = AdaptiveCard.FromJson(json).Card;
 
             var richTB = card.Body[0] as AdaptiveRichTextBlock;
             Assert.AreEqual(richTB.HorizontalAlignment, AdaptiveHorizontalAlignment.Center);
-            Assert.AreEqual(richTB.Wrap, true);
-            Assert.AreEqual(richTB.MaxLines, 3);
 
-            var paragraphs = richTB.Paragraphs;
-
-            var inlines1 = paragraphs[0].Inlines;
+            var inlines1 = richTB.Inlines;
             var run1 = inlines1[0] as AdaptiveTextRun;
-            Assert.AreEqual(run1.Text, "Start the first paragraph ");
+            Assert.AreEqual("Start the rich text block ", run1.Text);
 
             var run2 = inlines1[1] as AdaptiveTextRun;
-            Assert.AreEqual(run2.Text, "with some cool looking stuff");
+            Assert.AreEqual(run2.Text, "with some cool looking stuff. ");
+            Assert.IsTrue(run2.Italic);
+            Assert.IsTrue(run2.Strikethrough);
+            Assert.IsTrue(run2.Highlight);
+
+            var run3 = inlines1[2] as AdaptiveTextRun;
+            Assert.AreEqual(run3.Text, "This run has a link!");
+            Assert.AreEqual("Action.OpenUrl", run3.SelectAction.Type);
+            Assert.AreEqual("Open URL", run3.SelectAction.Title);
+            Assert.AreEqual("http://adaptivecards.io/", (run3.SelectAction as AdaptiveOpenUrlAction).UrlString); ;
         }
 
         [TestMethod]
@@ -629,31 +705,16 @@ namespace AdaptiveCards.Test
   ""body"": [
     {
       ""type"": ""RichTextBlock"",
-      ""paragraphs"": [
-        {
-          ""inlines"": []
-        }
-      ]
-    },
-    {
-      ""type"": ""RichTextBlock"",
-      ""paragraphs"": []
+      ""inlines"": []
     }
   ]
 }";
 
             var card = AdaptiveCard.FromJson(json).Card;
 
-            // Validate first RTB
+            // Validate RTB
             var richTB1 = card.Body[0] as AdaptiveRichTextBlock;
-            Assert.IsTrue(richTB1.Paragraphs.Count == 1);
-
-            var paragraph = richTB1.Paragraphs[0];
-            Assert.IsTrue(paragraph.Inlines.Count == 0);
-
-            // Validate second RTB
-            var richTB2 = card.Body[1] as AdaptiveRichTextBlock;
-            Assert.IsTrue(richTB2.Paragraphs.Count == 0);
+            Assert.IsTrue(richTB1.Inlines.Count == 0);
 
             Assert.AreEqual(json, card.ToJson());
         }
@@ -982,6 +1043,6 @@ namespace AdaptiveCards.Test
         }
 
 
-        
+
     }
 }

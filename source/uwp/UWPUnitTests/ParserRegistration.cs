@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using AdaptiveCards.Rendering.Uwp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -89,6 +91,11 @@ namespace UWPUnitTests
             public UInt32 MinHeight { get; set; }
             IAdaptiveCardElement IAdaptiveCardElement.FallbackContent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             FallbackType IAdaptiveCardElement.FallbackType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public bool MeetsRequirements(AdaptiveFeatureRegistration featureRegistration)
+            {
+                return true;
+            }
         };
         class TestElementParser : IAdaptiveElementParser
         {
@@ -190,7 +197,7 @@ namespace UWPUnitTests
             public FallbackType FallbackType { get; }
             public string ActionTypeString { get { return "TestCustomAction"; } }
             public string IconUrl { get; set; }
-            public string Sentiment { get; set; }
+            public string Style { get; set; }
             public string Title { get; set; }
             IAdaptiveActionElement IAdaptiveActionElement.FallbackContent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             FallbackType IAdaptiveActionElement.FallbackType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

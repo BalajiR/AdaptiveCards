@@ -1,8 +1,11 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "pch.h"
 #include "BackgroundImage.h"
 #include "BaseCardElement.h"
+#include "Util.h"
 
 namespace AdaptiveSharedNamespace
 {
@@ -38,10 +41,6 @@ namespace AdaptiveSharedNamespace
         // padding for card, the root, if the padding is allowed,
         // then the element can bleed to the card
         bool GetCanBleed() const { return (m_bleedDirection != ContainerBleedDirection::BleedRestricted); }
-        // 1. BleedToLeading: bleed its leading edge to the leading edge of the target parent
-        // 2. BleedToTrailing: bleed its trailing edge to the trailing edge of the target parent
-        // 3. RestrictedInAllDrections: doesn't bleed
-        // 4. BleedToBothEdges: bleed to both edges of the target parent
         ContainerBleedDirection GetBleedDirection() const { return m_bleedDirection; }
 
         // configures container style related attributes
@@ -56,6 +55,9 @@ namespace AdaptiveSharedNamespace
 
         std::shared_ptr<BackgroundImage> GetBackgroundImage() const;
         void SetBackgroundImage(const std::shared_ptr<BackgroundImage> value);
+
+        unsigned int GetMinHeight() const;
+        void SetMinHeight(const unsigned int value);
 
         template<typename T>
         void GetResourceInformation(std::vector<RemoteResourceInformation>& resourceInfo,
@@ -77,6 +79,7 @@ namespace AdaptiveSharedNamespace
         VerticalContentAlignment m_verticalContentAlignment;
         ContainerBleedDirection m_bleedDirection;
 
+        unsigned int m_minHeight;
         bool m_hasPadding;
         bool m_hasBleed;
         // id refers to parent to where bleed property should target
@@ -94,6 +97,10 @@ namespace AdaptiveSharedNamespace
         auto backgroundImage = ParseUtil::GetBackgroundImage(value);
         collection->SetBackgroundImage(backgroundImage);
 
+        bool canFallbackToAncestor = context.GetCanFallbackToAncestor();
+        context.SetCanFallbackToAncestor(canFallbackToAncestor || (collection->GetFallbackType() != FallbackType::None));
+        collection->SetCanFallbackToAncestor(canFallbackToAncestor);
+
         collection->SetStyle(
             ParseUtil::GetEnumValue<ContainerStyle>(value, AdaptiveCardSchemaKey::Style, ContainerStyle::None, ContainerStyleFromString));
 
@@ -101,6 +108,9 @@ namespace AdaptiveSharedNamespace
             value, AdaptiveCardSchemaKey::VerticalContentAlignment, VerticalContentAlignment::Top, VerticalContentAlignmentFromString));
 
         collection->SetBleed(ParseUtil::GetBool(value, AdaptiveCardSchemaKey::Bleed, false));
+
+        collection->SetMinHeight(
+            ParseSizeForPixelSize(ParseUtil::GetString(value, AdaptiveCardSchemaKey::MinHeight), &context.warnings));
 
         // configures for cotainer style
         collection->ConfigForContainerStyle(context);
@@ -114,6 +124,8 @@ namespace AdaptiveSharedNamespace
 
         // since we are walking dfs, we have to restore the style before we back up
         context.RestoreContextForCollectionTypeElement(*collection);
+
+        context.SetCanFallbackToAncestor(canFallbackToAncestor);
 
         // Parse optional selectAction
         collection->SetSelectAction(ParseUtil::GetAction(context, value, AdaptiveCardSchemaKey::SelectAction, false));

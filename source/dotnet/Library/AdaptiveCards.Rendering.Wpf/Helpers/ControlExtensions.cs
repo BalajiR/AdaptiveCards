@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -44,6 +46,13 @@ namespace AdaptiveCards.Rendering.Wpf
             FontColorConfig colorOption = context.GetForegroundColors(color);
             string colorCode = isSubtle ? colorOption.Subtle : colorOption.Default;
             inlineRun.Foreground = context.GetColorBrush(colorCode);
+        }
+
+        public static void SetHighlightColor(this Span inlineRun, AdaptiveTextColor color, bool isSubtle, AdaptiveRenderContext context)
+        {
+            FontColorConfig colorOption = context.GetForegroundColors(color);
+            string colorCode = isSubtle ? colorOption.HighlightColors.Subtle : colorOption.HighlightColors.Default;
+            inlineRun.Background = context.GetColorBrush(colorCode);
         }
 
         public static void SetHorizontalAlignment(this Image image, AdaptiveHorizontalAlignment alignment)

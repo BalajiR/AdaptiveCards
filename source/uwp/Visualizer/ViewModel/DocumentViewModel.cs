@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using AdaptiveCards.Rendering.Uwp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -226,6 +228,9 @@ namespace AdaptiveCardVisualizer.ViewModel
                 {
                     _renderer.HostConfig = hostConfig;
                 }
+
+                // Add a feature representing this version of the visualizer. used for test cards.
+                _renderer.FeatureRegistration.Set("acTest", "1.0");
 
                 if (Settings.UseFixedDimensions)
                 {

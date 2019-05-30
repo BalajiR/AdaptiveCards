@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 package io.adaptivecards.renderer.action;
 
 import android.content.Context;
@@ -79,7 +81,11 @@ public class ActionSetRenderer extends BaseCardElementRenderer
 
         BaseActionElementVector baseActionElementList = actionSet.GetActions();
 
-        ActionLayoutRenderer.getInstance().renderActions(renderedCard, context, fragmentManager, actionsLayout, baseActionElementList, cardActionHandler, hostConfig, renderArgs);
+        try
+        {
+            ActionLayoutRenderer.getInstance().renderActions(renderedCard, context, fragmentManager, actionsLayout, baseActionElementList, cardActionHandler, hostConfig, renderArgs);
+        }
+        catch (Exception e) {}
 
         viewGroup.addView(rootLayout);
         return rootLayout;

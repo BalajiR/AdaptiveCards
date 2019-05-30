@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "AdaptiveCards.Rendering.Uwp.h"
@@ -126,8 +128,6 @@ namespace AdaptiveNamespace
                                                       std::wstring resourceName,
                                                       _In_ ABI::Windows::UI::Xaml::IFrameworkElement* frameworkElement);
 
-        static Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::Media::IBrush> GetSolidColorBrush(_In_ ABI::Windows::UI::Color color);
-
         static HRESULT HandleToggleVisibilityClick(_In_ ABI::Windows::UI::Xaml::IFrameworkElement* cardFrameworkElement,
                                                    _In_ ABI::AdaptiveNamespace::IAdaptiveActionElement* action);
 
@@ -216,6 +216,12 @@ namespace AdaptiveNamespace
                                                                                           bool isHorizontal = true);
         static void ApplyMarginToXamlElement(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
                                              _In_ ABI::Windows::UI::Xaml::IFrameworkElement* element);
+        static void AddSeparatorIfNeeded(int& currentElement,
+                                         _In_ ABI::AdaptiveCards::Rendering::Uwp::IAdaptiveCardElement* element,
+                                         _In_ ABI::AdaptiveCards::Rendering::Uwp::IAdaptiveHostConfig* hostConfig,
+                                         _In_ ABI::AdaptiveCards::Rendering::Uwp::IAdaptiveRenderContext* renderContext,
+                                         _In_ ABI::Windows::UI::Xaml::Controls::IPanel* parentPanel,
+                                         _Outptr_ ABI::Windows::UI::Xaml::IUIElement** addedSeparator);
         static HRESULT BuildPanelChildren(
             _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>* children,
             _In_ ABI::Windows::UI::Xaml::Controls::IPanel* parentPanel,

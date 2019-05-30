@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "pch.h"
@@ -33,8 +35,8 @@ namespace AdaptiveSharedNamespace
         TextWeight GetTextWeight() const;
         void SetTextWeight(const TextWeight value);
 
-        FontStyle GetFontStyle() const;
-        void SetFontStyle(const FontStyle value);
+        FontType GetFontType() const;
+        void SetFontType(const FontType value);
 
         ForegroundColor GetTextColor() const;
         void SetTextColor(const ForegroundColor value);

@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include "stdafx.h"
 
 #include "ChoiceSetInput.h"
 #include "Column.h"
 #include "ColumnSet.h"
 #include "Container.h"
+#include "FeatureRegistration.h"
 #include "Media.h"
 #include "OpenUrlAction.h"
 #include "ParseContext.h"
@@ -1009,19 +1012,25 @@ namespace AdaptiveCardsSharedModelUnitTest
             auto body = card->GetBody();
             auto textBlock = std::static_pointer_cast<TextBlock>(body[0]);
             auto textBlockNoRequires = std::static_pointer_cast<TextBlock>(body[1]);
-            std::unordered_map<std::string, std::string> hostProvides { { "foobar", "2" } };
-            Assert::IsTrue(textBlock->MeetsRequirements(hostProvides));
-            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(hostProvides));
-            hostProvides.clear();
-            Assert::IsFalse(textBlock->MeetsRequirements(hostProvides));
-            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(hostProvides));
-            hostProvides.insert({ "foobar", "1.9.9.9" });
-            Assert::IsFalse(textBlock->MeetsRequirements(hostProvides));
-            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(hostProvides));
-            hostProvides.clear();
-            hostProvides.insert({ "foobar", "99" });
-            Assert::IsTrue(textBlock->MeetsRequirements(hostProvides));
-            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(hostProvides));
+
+            FeatureRegistration featureRegistration;
+
+            featureRegistration.AddFeature("foobar", "2");
+            Assert::IsTrue(textBlock->MeetsRequirements(featureRegistration));
+            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(featureRegistration));
+
+            featureRegistration.RemoveFeature("foobar");
+            Assert::IsFalse(textBlock->MeetsRequirements(featureRegistration));
+            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(featureRegistration));
+
+            featureRegistration.AddFeature("foobar", "1.9.9.9");
+            Assert::IsFalse(textBlock->MeetsRequirements(featureRegistration));
+            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(featureRegistration));
+
+            featureRegistration.RemoveFeature("foobar");
+            featureRegistration.AddFeature("foobar", "99");
+            Assert::IsTrue(textBlock->MeetsRequirements(featureRegistration));
+            Assert::IsTrue(textBlockNoRequires->MeetsRequirements(featureRegistration));
         }
 
         TEST_METHOD(NestedFallbacksSerialization)
@@ -1133,6 +1142,64 @@ namespace AdaptiveCardsSharedModelUnitTest
             }
         }
 
+        TEST_METHOD(ImplicitColumnTypeTest)
+        {
+            // Columns set to type "Column" or with type unset should parse correctly
+            std::string columnTypeSetOrEmpty =
+            "{\
+                \"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\
+                \"type\": \"AdaptiveCard\",\
+                \"version\": \"1.0\",\
+                \"body\": [\
+                    {\
+                        \"type\":\"ColumnSet\",\
+                        \"columns\": [\
+                            {\
+                                \"type\": \"Column\",\
+                                \"items\": [\
+                                ]\
+                            },\
+                            {\
+                                \"items\": [\
+                                ]\
+                            }\
+                        ]\
+                    }\
+                ]\
+            }";
 
+            // Columns set to a bogus type should not parse correctly
+            std::string columnTypeInvalid =
+            "{\
+                \"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\
+                \"type\": \"AdaptiveCard\",\
+                \"version\": \"1.0\",\
+                \"body\": [\
+                    {\
+                        \"type\":\"ColumnSet\",\
+                        \"columns\": [\
+                            {\
+                                \"type\": \"Elephant\",\
+                                \"items\": [\
+                                ]\
+                            }\
+                        ]\
+                    }\
+                ]\
+            }";
+
+            std::shared_ptr<ParseResult> parseResult = AdaptiveCard::DeserializeFromString(columnTypeSetOrEmpty, "1.0");
+
+            try
+            {
+                parseResult = AdaptiveCard::DeserializeFromString(columnTypeInvalid, "1.0");
+                Assert::IsTrue(false, L"Deserializing should throw an exception");
+            }
+            catch (const AdaptiveCardParseException& e)
+            {
+                Assert::IsTrue(ErrorStatusCode::InvalidPropertyValue == e.GetStatusCode(), L"ErrorStatusCode incorrect");
+                Assert::AreEqual("Unable to parse element of type Elephant", e.GetReason().c_str(), L"GetReason incorrect");
+            }
+        }
     };
 }

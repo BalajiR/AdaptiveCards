@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 import * as Enums from "./enums";
 import * as Utils from "./utils";
 import * as Shared from "./shared";
@@ -7,14 +9,36 @@ export interface IValidationError {
     message: string;
 }
 
-export class TextColorDefinition {
+export class ColorDefinition {
     default: string = "#000000";
     subtle: string = "#666666";
 
-    constructor(obj?: any) {
+    constructor(defaultColor?: string, subtleColor?: string) {
+        if (defaultColor) {
+            this.default = defaultColor;
+        }
+
+        if (subtleColor) {
+            this.subtle = subtleColor;
+        }
+    }
+
+    parse(obj?: any) {
         if (obj) {
             this.default = obj["default"] || this.default;
             this.subtle = obj["subtle"] || this.subtle;
+        }
+    }
+}
+
+export class TextColorDefinition extends ColorDefinition {
+    readonly highlightColors = new ColorDefinition("#22000000", "#11000000");
+
+    parse(obj?: any) {
+        super.parse(obj);
+
+        if (obj) {
+            this.highlightColors.parse(obj["highlightColors"]);
         }
     }
 }
@@ -203,22 +227,52 @@ export class ActionsConfig {
     }
 }
 
-export class ContainerStyleDefinition {
-    private getTextColorDefinitionOrDefault(obj: any, defaultValue: { default: string, subtle: string }) {
-        return new TextColorDefinition(obj ? obj : defaultValue);
+export class ColorSetDefinition {
+    private parseSingleColor(obj: any, propertyName: string) {
+        if (obj) {
+            (this[propertyName] as TextColorDefinition).parse(obj[propertyName]);
+        }
     }
 
+    default: TextColorDefinition = new TextColorDefinition();
+    dark: TextColorDefinition = new TextColorDefinition();
+    light: TextColorDefinition = new TextColorDefinition();
+    accent: TextColorDefinition = new TextColorDefinition();
+    good: TextColorDefinition = new TextColorDefinition();
+    warning: TextColorDefinition = new TextColorDefinition();
+    attention: TextColorDefinition = new TextColorDefinition();
+
+    constructor(obj?: any) {
+        this.parse(obj);
+    }
+
+    parse(obj: any) {
+        if (obj) {
+            this.parseSingleColor(obj, "default");
+            this.parseSingleColor(obj, "dark");
+            this.parseSingleColor(obj, "light");
+            this.parseSingleColor(obj, "accent");
+            this.parseSingleColor(obj, "good");
+            this.parseSingleColor(obj, "warning");
+            this.parseSingleColor(obj, "attention");
+        }
+    }
+}
+
+export class ContainerStyleDefinition {
     backgroundColor?: string;
 
-    readonly foregroundColors = {
-        default: new TextColorDefinition(),
-        dark: new TextColorDefinition(),
-        light: new TextColorDefinition(),
-        accent: new TextColorDefinition(),
-        good: new TextColorDefinition(),
-        warning: new TextColorDefinition(),
-        attention: new TextColorDefinition()
-    };
+    readonly foregroundColors: ColorSetDefinition = new ColorSetDefinition(
+        {
+            "default": { default: "#333333", subtle: "#EE333333" },
+            "dark": { default: "#000000", subtle: "#66000000" },
+            "light": { default: "#FFFFFF", subtle: "#33000000" },
+            "accent": { default: "#2E89FC", subtle: "#882E89FC" },
+            "good": { default: "#54A254", subtle: "#DD54A254" },
+            "warning": { default: "#E69500", subtle: "#DDE69500" },
+            "attention": { default: "#CC3300", subtle: "#DDCC3300" }
+        }
+    );
 
     highlightBackgroundColor?: string;
     highlightForegroundColor?: string;
@@ -227,15 +281,7 @@ export class ContainerStyleDefinition {
         if (obj) {
             this.backgroundColor = obj["backgroundColor"];
 
-            if (obj.foregroundColors) {
-                this.foregroundColors.default = this.getTextColorDefinitionOrDefault(obj.foregroundColors["default"], { default: "#333333", subtle: "#EE333333" });
-                this.foregroundColors.dark = this.getTextColorDefinitionOrDefault(obj.foregroundColors["dark"], { default: "#000000", subtle: "#66000000" });
-                this.foregroundColors.light = this.getTextColorDefinitionOrDefault(obj.foregroundColors["light"], { default: "#FFFFFF", subtle: "#33000000" });
-                this.foregroundColors.accent = this.getTextColorDefinitionOrDefault(obj.foregroundColors["accent"], { default: "#2E89FC", subtle: "#882E89FC" });
-                this.foregroundColors.good = this.getTextColorDefinitionOrDefault(obj.foregroundColors["good"], { default: "#54A254", subtle: "#DD54A254" });
-                this.foregroundColors.warning = this.getTextColorDefinitionOrDefault(obj.foregroundColors["warning"], { default: "#E69500", subtle: "#DDE69500" });
-                this.foregroundColors.attention = this.getTextColorDefinitionOrDefault(obj.foregroundColors["attention"], { default: "#CC3300", subtle: "#DDCC3300" });
-            }
+            this.foregroundColors.parse(obj["foregroundColors"]);
 
             this.highlightBackgroundColor = obj["highlightBackgroundColor"];
             this.highlightForegroundColor = obj["highlightForegroundColor"];
@@ -401,7 +447,7 @@ export class Version {
             return -1;
         }
         else if (this.minor > otherVersion.minor) {
-            return 1; 
+            return 1;
         }
         else if (this.minor < otherVersion.minor) {
             return -1;
@@ -497,8 +543,8 @@ export interface IFontWeightDefinitions {
     bolder: number;
 }
 
-export class FontStyleDefinition {
-    static readonly monospace =  new FontStyleDefinition("'Courier New', Courier, monospace");
+export class FontTypeDefinition {
+    static readonly monospace =  new FontTypeDefinition("'Courier New', Courier, monospace");
 
     fontFamily?: string = "Segoe UI,Segoe,Segoe WP,Helvetica Neue,Helvetica,sans-serif";
 
@@ -515,7 +561,7 @@ export class FontStyleDefinition {
         default: 400,
         bolder: 600
     };
-    
+
     constructor(fontFamily?: string) {
         if (fontFamily) {
             this.fontFamily = fontFamily;
@@ -539,13 +585,13 @@ export class FontStyleDefinition {
     }
 }
 
-export class FontStyleSet {
-    default: FontStyleDefinition;
-    monospace: FontStyleDefinition;
+export class FontTypeSet {
+    default: FontTypeDefinition;
+    monospace: FontTypeDefinition;
 
     constructor(obj?: any) {
-        this.default = new FontStyleDefinition();
-        this.monospace = new FontStyleDefinition("'Courier New', Courier, monospace");
+        this.default = new FontTypeDefinition();
+        this.monospace = new FontTypeDefinition("'Courier New', Courier, monospace");
 
         if (obj) {
             this.default.parse(obj["default"]);
@@ -553,11 +599,11 @@ export class FontStyleSet {
         }
     }
 
-    getStyleDefinition(style: Enums.FontStyle): FontStyleDefinition {
+    getStyleDefinition(style: Enums.FontType): FontTypeDefinition {
         switch (style) {
-            case Enums.FontStyle.Monospace:
+            case Enums.FontType.Monospace:
                 return this.monospace;
-            case Enums.FontStyle.Default:
+            case Enums.FontType.Default:
             default:
                 return this.default;
         }
@@ -567,12 +613,12 @@ export class FontStyleSet {
 export class HostConfig {
     readonly hostCapabilities = new HostCapabilities();
 
-    private _legacyFontStyle: FontStyleDefinition;
+    private _legacyFontType: FontTypeDefinition;
 
     choiceSetInputValueSeparator: string = ",";
     supportsInteractivity: boolean = true;
     lineHeights?: ILineHeightDefinitions;
-    fontStyles: FontStyleSet = null;
+    fontTypes: FontTypeSet = null;
 
     readonly spacing = {
         small: 3,
@@ -612,11 +658,11 @@ export class HostConfig {
             this.choiceSetInputValueSeparator = (obj && typeof obj["choiceSetInputValueSeparator"] === "string") ? obj["choiceSetInputValueSeparator"] : this.choiceSetInputValueSeparator;
             this.supportsInteractivity = (obj && typeof obj["supportsInteractivity"] === "boolean") ? obj["supportsInteractivity"] : this.supportsInteractivity;
 
-            this._legacyFontStyle = new FontStyleDefinition();
-            this._legacyFontStyle.parse(obj);
+            this._legacyFontType = new FontTypeDefinition();
+            this._legacyFontType.parse(obj);
 
-            if (obj.fontStyles) {
-                this.fontStyles = new FontStyleSet(obj.fontStyles);
+            if (obj.fontTypes) {
+                this.fontTypes = new FontTypeSet(obj.fontTypes);
             }
 
             if (obj.lineHeights) {
@@ -657,12 +703,12 @@ export class HostConfig {
         }
     }
 
-    getFontStyleDefinition(style?: Enums.FontStyle): FontStyleDefinition {
-        if (this.fontStyles) {
-            return this.fontStyles.getStyleDefinition(style);
+    getFontTypeDefinition(style?: Enums.FontType): FontTypeDefinition {
+        if (this.fontTypes) {
+            return this.fontTypes.getStyleDefinition(style);
         }
         else {
-            return style == Enums.FontStyle.Monospace ? FontStyleDefinition.monospace : this._legacyFontStyle;
+            return style == Enums.FontType.Monospace ? FontTypeDefinition.monospace : this._legacyFontType;
         }
     }
 
@@ -692,7 +738,7 @@ export class HostConfig {
 			this.getEffectiveSpacing(paddingDefinition.bottom),
 			this.getEffectiveSpacing(paddingDefinition.left));
     }
-    
+
     makeCssClassNames(...classNames: string[]): string[] {
         let result: string[] = [];
 
@@ -710,18 +756,18 @@ export class HostConfig {
     }
 
     get fontFamily(): string {
-        return this._legacyFontStyle.fontFamily;
+        return this._legacyFontType.fontFamily;
     }
 
     set fontFamily(value: string) {
-        this._legacyFontStyle.fontFamily = value;
+        this._legacyFontType.fontFamily = value;
     }
 
     get fontSizes(): IFontSizeDefinitions {
-        return this._legacyFontStyle.fontSizes;
+        return this._legacyFontType.fontSizes;
     }
 
     get fontWeights(): IFontWeightDefinitions {
-        return this._legacyFontStyle.fontWeights;
+        return this._legacyFontType.fontWeights;
     }
 }

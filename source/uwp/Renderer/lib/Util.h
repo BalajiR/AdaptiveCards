@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 #include <wrl.h>
 #include <wrl/wrappers/corewrappers.h>
@@ -13,7 +15,6 @@
 #include <Image.h>
 #include <Inline.h>
 #include <MediaSource.h>
-#include <Paragraph.h>
 #include <ToggleVisibilityTarget.h>
 #include <windows.foundation.collections.h>
 #include <ParseContext.h>
@@ -62,31 +63,31 @@ HRESULT GetHighlighter(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
                        _In_ ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
                        _Out_ ABI::Windows::UI::Xaml::Documents::ITextHighlighter** textHighlighter) noexcept;
 
-HRESULT GetFontDataFromStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
-                             ABI::AdaptiveNamespace::FontStyle style,
-                             ABI::AdaptiveNamespace::TextSize desiredSize,
-                             ABI::AdaptiveNamespace::TextWeight desiredWeight,
-                             _Outptr_ HSTRING* resultFontFamilyName,
-                             _Out_ UINT32* resultSize,
-                             _Out_ ABI::Windows::UI::Text::FontWeight* resultWeight) noexcept;
+HRESULT GetFontDataFromFontType(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
+                                ABI::AdaptiveNamespace::FontType fontType,
+                                ABI::AdaptiveNamespace::TextSize desiredSize,
+                                ABI::AdaptiveNamespace::TextWeight desiredWeight,
+                                _Outptr_ HSTRING* resultFontFamilyName,
+                                _Out_ UINT32* resultSize,
+                                _Out_ ABI::Windows::UI::Text::FontWeight* resultWeight) noexcept;
 
-HRESULT GetFontFamilyFromStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
-                               ABI::AdaptiveNamespace::FontStyle style,
-                               _Outptr_ HSTRING* resultFontFamilyName) noexcept;
+HRESULT GetFontFamilyFromFontType(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
+                                  ABI::AdaptiveNamespace::FontType fontType,
+                                  _Outptr_ HSTRING* resultFontFamilyName) noexcept;
 
-HRESULT GetFontSizeFromStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
-                             ABI::AdaptiveNamespace::FontStyle style,
-                             ABI::AdaptiveNamespace::TextSize desiredSize,
-                             _Out_ UINT32* resultSize) noexcept;
+HRESULT GetFontSizeFromFontType(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
+                                ABI::AdaptiveNamespace::FontType fontType,
+                                ABI::AdaptiveNamespace::TextSize desiredSize,
+                                _Out_ UINT32* resultSize) noexcept;
 
 HRESULT GetFontWeightFromStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
-                               ABI::AdaptiveNamespace::FontStyle style,
+                               ABI::AdaptiveNamespace::FontType fontType,
                                ABI::AdaptiveNamespace::TextWeight desiredWeight,
                                _Out_ ABI::Windows::UI::Text::FontWeight* resultWeight) noexcept;
 
-HRESULT GetFontStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
-                     ABI::AdaptiveNamespace::FontStyle style,
-                     _COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveFontStyleDefinition** styleDefinition) noexcept;
+HRESULT GetFontType(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
+                    ABI::AdaptiveNamespace::FontType fontType,
+                    _COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveFontTypeDefinition** styleDefinition) noexcept;
 
 HRESULT GetFontSize(_In_ ABI::AdaptiveNamespace::IAdaptiveFontSizesConfig* sizesConfig,
                     ABI::AdaptiveNamespace::TextSize desiredSize,
@@ -127,9 +128,6 @@ HRESULT GenerateSharedMediaSources(_In_ ABI::Windows::Foundation::Collections::I
 HRESULT GenerateSharedInlines(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* items,
                               std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements);
 
-HRESULT GenerateSharedParagraphs(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* items,
-                                 std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements);
-
 HRESULT GenerateSharedToggleElements(
     _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveToggleVisibilityTarget*>* items,
     std::vector<std::shared_ptr<AdaptiveSharedNamespace::ToggleVisibilityTarget>>& containedElements);
@@ -156,10 +154,6 @@ HRESULT GenerateFactsProjection(const std::vector<std::shared_ptr<AdaptiveShared
 
 HRESULT GenerateInlinesProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements,
                                   _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* projectedParentContainer) noexcept;
-
-HRESULT GenerateParagraphsProjection(
-    const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements,
-    _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* projectedParentContainer) noexcept;
 
 HRESULT GenerateImagesProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Image>>& containedElements,
                                  _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveImage*>* projectedParentContainer) noexcept;
@@ -251,6 +245,9 @@ HRESULT GetDateTimeReference(unsigned int year,
 
 ABI::AdaptiveNamespace::FallbackType MapSharedFallbackTypeToUwp(const AdaptiveSharedNamespace::FallbackType type);
 AdaptiveSharedNamespace::FallbackType MapUwpFallbackTypeToShared(const ABI::AdaptiveNamespace::FallbackType type);
+
+HRESULT CopyTextElement(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* textElement,
+                        _COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveTextElement** copiedTextElement);
 
 namespace AdaptiveNamespace
 {

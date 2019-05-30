@@ -1,10 +1,39 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace AdaptiveCards.Rendering.Html.Test
 {
     [TestClass]
     public class HtmlRendererTests
     {
+
+        [TestMethod]
+        public void TextBlockRender_ItalicAndStrikethrough()
+        {
+            AdaptiveCard card = new AdaptiveCard("1.2")
+            {
+                Body = new System.Collections.Generic.List<AdaptiveElement>()
+                {
+                    new AdaptiveTextBlock("Some italic struck-through text")
+                    {
+                        Italic = true,
+                        Strikethrough = true
+                    }
+                }
+            };
+
+
+            var renderer = new AdaptiveCardRenderer();
+            var result = renderer.RenderCard(card);
+            var generatedHtml = result.Html.ToString();
+
+            Assert.AreEqual("<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;font-style: italic;text-decoration: line-through;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>Some italic struck-through text</p></div></div>",
+                generatedHtml);
+        }
+
         [TestMethod]
         public void TextBlockRender_ParagraphElementStylesAdded()
         {
@@ -28,7 +57,7 @@ namespace AdaptiveCards.Rendering.Html.Test
         }
 
         [TestMethod]
-        public void RichTextBlockRender_MultipleParagraphs()
+        public void RichTextBlockRender_MultipleInlines()
         {
             var card = new AdaptiveCard("1.2")
             {
@@ -36,30 +65,25 @@ namespace AdaptiveCards.Rendering.Html.Test
                 {
                     new AdaptiveRichTextBlock()
                     {
-                        Paragraphs = {
-                            new AdaptiveParagraph() {
-                                Inlines = {
-                                    new AdaptiveTextRun
-                                    {
-                                        Text = "Paragraph 1 Inline 1"
-                                    },
-                                    new AdaptiveTextRun
-                                    {
-                                        Text = "Paragraph 1 Inline 2"
-                                    }
-                                }
+                        Inlines = {
+                            new AdaptiveTextRun
+                            {
+                                Text = "Inline 1"
                             },
-                            new AdaptiveParagraph() {
-                                Inlines = {
-                                    new AdaptiveTextRun
-                                    {
-                                        Text = "Paragraph 2 Inline 1"
-                                    },
-                                    new AdaptiveTextRun
-                                    {
-                                        Text = "Paragraph 2 Inline 2"
-                                    }
-                                }
+                            new AdaptiveTextRun
+                            {
+                                Text = "Inline 2"
+                            },
+                            new AdaptiveTextRun
+                            {
+                                Text = "Inline 3"
+                            },
+                            new AdaptiveTextRun
+                            {
+                                Text = "Inline 4",
+                                Italic = true,
+                                Strikethrough = true,
+                                Highlight = true
                             }
                         }
                     }
@@ -71,8 +95,69 @@ namespace AdaptiveCards.Rendering.Html.Test
             var generatedHtml = result.Html.ToString();
 
             Assert.AreEqual(
-                "<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-richtextblock' style='box-sizing: border-box;text-align: left;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Paragraph 1 Inline 1</span><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Paragraph 1 Inline 2</span></p><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Paragraph 2 Inline 1</span><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Paragraph 2 Inline 2</span></p></div></div>",
+                "<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-richtextblock' style='box-sizing: border-box;text-align: left;word-wrap: break-word;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;'><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Inline 1</span><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Inline 2</span><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>Inline 3</span><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;font-style: italic;text-decoration: line-through;background-color: rgba(255, 255, 0, 1.00);'>Inline 4</span></p></div></div>",
                 generatedHtml);
+        }
+
+        [TestMethod]
+        public void TextBlocks_Markdown()
+        {
+            var card = new AdaptiveCard("1.2")
+            {
+                Body = new System.Collections.Generic.List<AdaptiveElement>()
+                {
+                    new AdaptiveRichTextBlock()
+                    {
+                        Inlines = {
+                            new AdaptiveTextRun
+                            {
+                                Text = "The RichTextBlock should not support **markdown**"
+                            }
+                        }
+                    },
+                    new AdaptiveTextBlock()
+                    {
+                        Text = "The TextBlock should support **markdown**"
+                    }
+                }
+            };
+
+            var renderer = new AdaptiveCardRenderer();
+            var result = renderer.RenderCard(card);
+            var generatedHtml = result.Html.ToString();
+
+            var randomGeneratedIds = FindAllRandomGeneratedIds(generatedHtml);
+
+            Assert.AreEqual(
+                "<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-richtextblock' style='box-sizing: border-box;text-align: left;word-wrap: break-word;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;'><span class='ac-textrun' style='color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;'>The RichTextBlock should not support **markdown**</span></p></div><div class='ac-separator' id='" + randomGeneratedIds[0] + "' style='height: 8px;'></div><div class='ac-textblock' data-ac-separatorId='" + randomGeneratedIds[0] + "' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>The TextBlock should support <strong>markdown</strong></p></div></div>",
+                generatedHtml);
+        }
+
+        [TestMethod]
+        public void RenderFallbackItem()
+        {
+            var json = @"{
+  ""type"": ""AdaptiveCard"",
+  ""version"": ""1.2"",
+  ""body"": [
+    {
+      ""type"": ""Graph"",
+      ""text"": ""First textblock"",
+      ""fallback"": {
+        ""type"": ""TextBlock"",
+        ""text"": ""Fallback textblock""
+      }
+    }
+  ]
+}";
+
+            var card = AdaptiveCard.FromJson(json).Card;
+
+            var renderer = new AdaptiveCardRenderer();
+            var result = renderer.RenderCard(card);
+            var generatedHtml = result.Html.ToString();
+
+            Assert.AreEqual("<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>Fallback textblock</p></div></div>", generatedHtml);
         }
 
         [TestMethod]
@@ -125,9 +210,29 @@ namespace AdaptiveCards.Rendering.Html.Test
             var result = renderer.RenderCard(card);
             var generatedHtml = result.Html.ToString();
 
+            var randomGeneratedIds = FindAllRandomGeneratedIds(generatedHtml);
+
             Assert.AreEqual(
-                "<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-container' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;background-color: rgba(0, 0, 0, 0.03);justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(204, 51, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1 -- emphasis style text</p></div><div class='ac-separator' style='height: 8px;'></div><div class='ac-container' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;background-color: #dce5f7;justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1.1 -- accent style text</p></div></div><div class='ac-separator' style='height: 8px;'></div><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(204, 51, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1 -- emphasis style text</p></div></div><div class='ac-separator' style='height: 8px;'></div><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>default style text</p></div></div>",
+                "<div class='ac-adaptivecard' style='width: 100%;background-color: rgba(255, 255, 255, 1.00);padding: 15px;box-sizing: border-box;justify-content: flex-start;'><div class='ac-container' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;background-color: rgba(0, 0, 0, 0.03);justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(204, 51, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1 -- emphasis style text</p></div><div class='ac-separator' id='" + randomGeneratedIds[0] + "' style='height: 8px;'></div><div class='ac-container' data-ac-separatorId='" + randomGeneratedIds[0] + "' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;background-color: #dce5f7;justify-content: flex-start;'><div class='ac-textblock' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1.1 -- accent style text</p></div></div><div class='ac-separator' id='" + randomGeneratedIds[1] + "' style='height: 8px;'></div><div class='ac-textblock' data-ac-separatorId='" + randomGeneratedIds[1] + "' style='box-sizing: border-box;text-align: left;color: rgba(204, 51, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>container 1 -- emphasis style text</p></div></div><div class='ac-separator' id='" + randomGeneratedIds[2] + "' style='height: 8px;'></div><div class='ac-textblock' data-ac-separatorId='" + randomGeneratedIds[2] + "' style='box-sizing: border-box;text-align: left;color: rgba(0, 0, 0, 1.00);line-height: 18.62px;font-size: 14px;font-weight: 400;white-space: nowrap;'><p style='margin-top: 0px;margin-bottom: 0px;width: 100%;text-overflow: ellipsis;overflow: hidden;'>default style text</p></div></div>",
                 generatedHtml);
+        }
+
+        public List<string> FindAllRandomGeneratedIds(string html)
+        {
+            List<string> randomGeneratedIds = new List<string>();
+
+            string pattern = "id='ac-[0-9a-f]{8}'";
+
+            Regex regex = new Regex(pattern);
+            MatchCollection matches = regex.Matches(html);
+
+            foreach (Match match in matches)
+            {
+                // The actual id is located in the range
+                randomGeneratedIds.Add(match.Value.Substring(4, 11));
+            }
+
+            return randomGeneratedIds;
         }
 
         private class TestHtmlRenderer : AdaptiveCardRenderer
@@ -240,7 +345,7 @@ namespace AdaptiveCards.Rendering.Html.Test
 
             // Generated HTML should have an additional disabled and hidden option which is selected.
             Assert.AreEqual(
-                "<div class='ac-container' style='background-color: rgba(255, 255, 255, 1.00);justify-content: flex-start;'><div class='ac-container' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;margin-right: -15px;margin-left: -15px;background-color: rgba(0, 0, 0, 0.03);justify-content: flex-start;'></div></div>",
+                "<div class='ac-container' style='background-color: rgba(255, 255, 255, 1.00);justify-content: flex-start;'><div class='ac-container' style='padding-right: 15px;padding-left: 15px;padding-top: 15px;padding-bottom: 15px;margin-right: -15px;margin-left: -15px;margin-top: -15px;margin-bottom: -15px;background-color: rgba(0, 0, 0, 0.03);justify-content: flex-start;'></div></div>",
                 workingBleedHtml);
 
             Assert.AreEqual(
