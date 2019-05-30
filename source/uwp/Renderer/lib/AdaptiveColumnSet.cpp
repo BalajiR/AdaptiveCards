@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include "pch.h"
 #include "AdaptiveColumnSet.h"
 
@@ -16,7 +18,10 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 namespace AdaptiveNamespace
 {
-    AdaptiveColumnSet::AdaptiveColumnSet() { m_columns = Microsoft::WRL::Make<Vector<ABI::AdaptiveNamespace::AdaptiveColumn*>>(); }
+    AdaptiveColumnSet::AdaptiveColumnSet() : m_bleedDirection(ABI::AdaptiveNamespace::BleedDirection::None)
+    {
+        m_columns = Microsoft::WRL::Make<Vector<ABI::AdaptiveNamespace::AdaptiveColumn*>>();
+    }
 
     HRESULT AdaptiveColumnSet::RuntimeClassInitialize() noexcept try
     {
@@ -25,7 +30,7 @@ namespace AdaptiveNamespace
     }
     CATCH_RETURN;
 
-    HRESULT AdaptiveColumnSet::RuntimeClassInitialize(const std::shared_ptr<AdaptiveSharedNamespace::ColumnSet>& sharedColumnSet) try
+    HRESULT AdaptiveColumnSet::RuntimeClassInitialize(const std::shared_ptr<AdaptiveSharedNamespace::ColumnSet>& sharedColumnSet) noexcept try
     {
         if (sharedColumnSet == nullptr)
         {
@@ -36,6 +41,9 @@ namespace AdaptiveNamespace
         GenerateActionProjection(sharedColumnSet->GetSelectAction(), &m_selectAction);
 
         m_style = static_cast<ABI::AdaptiveNamespace::ContainerStyle>(sharedColumnSet->GetStyle());
+        m_minHeight = sharedColumnSet->GetMinHeight();
+        m_bleed = sharedColumnSet->GetBleed();
+        m_bleedDirection = static_cast<ABI::AdaptiveNamespace::BleedDirection>(sharedColumnSet->GetBleedDirection());
 
         InitializeBaseElement(std::static_pointer_cast<BaseCardElement>(sharedColumnSet));
 
@@ -71,13 +79,45 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
-    IFACEMETHODIMP AdaptiveColumnSet::get_ElementType(_Out_ ElementType* elementType)
+    HRESULT AdaptiveColumnSet::get_MinHeight(_Out_ UINT32* minHeight)
+    {
+        *minHeight = m_minHeight;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::put_MinHeight(UINT32 minHeight)
+    {
+        m_minHeight = minHeight;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::get_Bleed(_Out_ boolean* isBleed)
+    {
+        *isBleed = m_bleed;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::put_Bleed(boolean isBleed)
+    {
+        m_bleed = isBleed;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::get_BleedDirection(ABI::AdaptiveNamespace::BleedDirection* bleedDirection)
+    {
+        // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
+        // the shared model logic. https://github.com/Microsoft/AdaptiveCards/issues/2678
+        *bleedDirection = m_bleedDirection;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::get_ElementType(_Out_ ElementType* elementType)
     {
         *elementType = ElementType::ColumnSet;
         return S_OK;
     }
 
-    HRESULT AdaptiveColumnSet::GetSharedModel(std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& sharedModel) try
+    HRESULT AdaptiveColumnSet::GetSharedModel(std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& sharedModel) noexcept try
     {
         std::shared_ptr<AdaptiveSharedNamespace::ColumnSet> columnSet = std::make_shared<AdaptiveSharedNamespace::ColumnSet>();
         RETURN_IF_FAILED(SetSharedElementProperties(std::static_pointer_cast<AdaptiveSharedNamespace::BaseCardElement>(columnSet)));
@@ -108,6 +148,8 @@ namespace AdaptiveNamespace
         });
 
         columnSet->SetStyle(static_cast<AdaptiveSharedNamespace::ContainerStyle>(m_style));
+        columnSet->SetMinHeight(m_minHeight);
+        columnSet->SetBleed(m_bleed);
 
         sharedModel = columnSet;
         return S_OK;

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 package io.adaptivecards.renderer.readonly;
 
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.widget.LinearLayout;
 
 import io.adaptivecards.objectmodel.ContainerStyle;
 import io.adaptivecards.objectmodel.HeightType;
+import io.adaptivecards.renderer.AdaptiveFallbackException;
 import io.adaptivecards.renderer.BaseCardElementRenderer;
 import io.adaptivecards.renderer.IBaseCardElementRenderer;
 import io.adaptivecards.renderer.RenderArgs;
@@ -66,7 +69,7 @@ public class ImageSetRenderer extends BaseCardElementRenderer
             throw new InternalError("Unable to convert BaseCardElement to ImageSet object model.");
         }
 
-        setSpacingAndSeparator(context, viewGroup, imageSet.GetSpacing(), imageSet.GetSeparator(), hostConfig, true);
+        View separator = setSpacingAndSeparator(context, viewGroup, imageSet.GetSpacing(), imageSet.GetSeparator(), hostConfig, true);
 
         IBaseCardElementRenderer imageRenderer = CardRendererRegistration.getInstance().getRenderer(CardElementType.Image.toString());
         if (imageRenderer == null)
@@ -75,11 +78,9 @@ public class ImageSetRenderer extends BaseCardElementRenderer
         }
 
         HorizontalFlowLayout horizFlowLayout = new HorizontalFlowLayout(context);
-        horizFlowLayout.setTag(new TagContent(imageSet));
-        if(!baseCardElement.GetIsVisible())
-        {
-            horizFlowLayout.setVisibility(View.GONE);
-        }
+        horizFlowLayout.setTag(new TagContent(imageSet, separator, viewGroup));
+
+        setVisibility(baseCardElement.GetIsVisible(), horizFlowLayout);
 
         ImageSize imageSize = imageSet.GetImageSize();
         ImageVector imageVector = imageSet.GetImages();
@@ -90,24 +91,21 @@ public class ImageSetRenderer extends BaseCardElementRenderer
 
             // TODO: temporary - this will be handled in the object model
             image.SetImageSize(imageSize);
-            View imageView = imageRenderer.render(renderedCard, context, fragmentManager, horizFlowLayout, image, cardActionHandler, hostConfig, renderArgs);
-            ((ImageView) imageView).setMaxHeight(Util.dpToPixels(context, hostConfig.GetImageSet().getMaxImageHeight()));
+
+            try
+            {
+                View imageView = imageRenderer.render(renderedCard, context, fragmentManager, horizFlowLayout, image, cardActionHandler, hostConfig, renderArgs);
+                ((ImageView) imageView).setMaxHeight(Util.dpToPixels(context, hostConfig.GetImageSet().getMaxImageHeight()));
+            }
+            catch (AdaptiveFallbackException e)
+            {
+                continue;
+            }
         }
 
-        if (imageSet.GetHeight() == HeightType.Stretch || imageSet.GetMinHeight() != 0)
+        if (imageSet.GetHeight() == HeightType.Stretch)
         {
-            if (imageSet.GetHeight() == HeightType.Stretch)
-            {
-                viewGroup.addView(horizFlowLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1));
-            }
-            else
-            {
-                LinearLayout minHeightLayout = new LinearLayout(context);
-                minHeightLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                minHeightLayout.setMinimumHeight(Util.dpToPixels(context, (int)imageSet.GetMinHeight()));
-                minHeightLayout.addView(horizFlowLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                viewGroup.addView(minHeightLayout);
-            }
+            viewGroup.addView(horizFlowLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1));
         }
         else
         {

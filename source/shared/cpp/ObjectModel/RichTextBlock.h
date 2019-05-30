@@ -1,10 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "pch.h"
 #include "BaseCardElement.h"
 #include "ElementParserRegistration.h"
 #include "DateTimePreparser.h"
-#include "Paragraph.h"
+#include "Inline.h"
 
 namespace AdaptiveSharedNamespace
 {
@@ -22,25 +24,17 @@ namespace AdaptiveSharedNamespace
 
         Json::Value SerializeToJsonValue() const override;
 
-        bool GetWrap() const;
-        void SetWrap(const bool value);
-
-        unsigned int GetMaxLines() const;
-        void SetMaxLines(const unsigned int value);
-
         HorizontalAlignment GetHorizontalAlignment() const;
         void SetHorizontalAlignment(const HorizontalAlignment value);
 
-        std::vector<std::shared_ptr<Paragraph>>& GetParagraphs();
-        const std::vector<std::shared_ptr<Paragraph>>& GetParagraphs() const;
+        std::vector<std::shared_ptr<Inline>>& GetInlines();
+        const std::vector<std::shared_ptr<Inline>>& GetInlines() const;
 
     private:
-        bool m_wrap;
-        unsigned int m_maxLines;
         HorizontalAlignment m_hAlignment;
         void PopulateKnownPropertiesSet() override;
 
-        std::vector<std::shared_ptr<Paragraph>> m_paragraphs;
+        std::vector<std::shared_ptr<Inline>> m_inlines;
     };
 
     class RichTextBlockParser : public BaseCardElementParser

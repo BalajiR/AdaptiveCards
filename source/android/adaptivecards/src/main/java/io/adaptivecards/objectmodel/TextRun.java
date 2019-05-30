@@ -87,12 +87,12 @@ public class TextRun extends Inline {
     AdaptiveCardObjectModelJNI.TextRun_SetTextWeight(swigCPtr, this, value.swigValue());
   }
 
-  public FontStyle GetFontStyle() {
-    return FontStyle.swigToEnum(AdaptiveCardObjectModelJNI.TextRun_GetFontStyle(swigCPtr, this));
+  public FontType GetFontType() {
+    return FontType.swigToEnum(AdaptiveCardObjectModelJNI.TextRun_GetFontType(swigCPtr, this));
   }
 
-  public void SetFontStyle(FontStyle value) {
-    AdaptiveCardObjectModelJNI.TextRun_SetFontStyle(swigCPtr, this, value.swigValue());
+  public void SetFontType(FontType value) {
+    AdaptiveCardObjectModelJNI.TextRun_SetFontType(swigCPtr, this, value.swigValue());
   }
 
   public ForegroundColor GetTextColor() {
@@ -109,6 +109,22 @@ public class TextRun extends Inline {
 
   public void SetIsSubtle(boolean value) {
     AdaptiveCardObjectModelJNI.TextRun_SetIsSubtle(swigCPtr, this, value);
+  }
+
+  public boolean GetItalic() {
+    return AdaptiveCardObjectModelJNI.TextRun_GetItalic(swigCPtr, this);
+  }
+
+  public void SetItalic(boolean value) {
+    AdaptiveCardObjectModelJNI.TextRun_SetItalic(swigCPtr, this, value);
+  }
+
+  public boolean GetStrikethrough() {
+    return AdaptiveCardObjectModelJNI.TextRun_GetStrikethrough(swigCPtr, this);
+  }
+
+  public void SetStrikethrough(boolean value) {
+    AdaptiveCardObjectModelJNI.TextRun_SetStrikethrough(swigCPtr, this, value);
   }
 
   public boolean GetHighlight() {

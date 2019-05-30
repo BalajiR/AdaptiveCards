@@ -1,9 +1,11 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #pragma once
 
 #include "pch.h"
 #include "ElementParserRegistration.h"
 #include "Inline.h"
-#include "TextElementProperties.h"
+#include "RichTextElementProperties.h"
 
 namespace AdaptiveSharedNamespace
 {
@@ -31,14 +33,20 @@ namespace AdaptiveSharedNamespace
         TextWeight GetTextWeight() const;
         void SetTextWeight(const TextWeight value);
 
-        FontStyle GetFontStyle() const;
-        void SetFontStyle(const FontStyle value);
+        FontType GetFontType() const;
+        void SetFontType(const FontType value);
 
         ForegroundColor GetTextColor() const;
         void SetTextColor(const ForegroundColor value);
 
         bool GetIsSubtle() const;
         void SetIsSubtle(const bool value);
+
+        bool GetItalic() const;
+        void SetItalic(const bool value);
+
+        bool GetStrikethrough() const;
+        void SetStrikethrough(const bool value);
 
         bool GetHighlight() const;
         void SetHighlight(const bool value);
@@ -50,7 +58,7 @@ namespace AdaptiveSharedNamespace
         void SetSelectAction(const std::shared_ptr<BaseActionElement> action);
 
     protected:
-        std::shared_ptr<TextElementProperties> m_textElementProperties;
+        std::shared_ptr<RichTextElementProperties> m_textElementProperties;
         void PopulateKnownPropertiesSet() override;
         std::shared_ptr<BaseActionElement> m_selectAction;
         bool m_highlight;

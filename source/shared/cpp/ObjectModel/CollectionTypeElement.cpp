@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include "pch.h"
 #include "CollectionTypeElement.h"
 #include "Util.h"
@@ -6,7 +8,7 @@ using namespace AdaptiveSharedNamespace;
 
 CollectionTypeElement::CollectionTypeElement(CardElementType type, ContainerStyle style, VerticalContentAlignment alignment) :
     BaseCardElement(type), m_style(style), m_verticalContentAlignment(alignment), m_hasPadding(false),
-    m_hasBleed(false), m_parentalId(), m_bleedDirection(ContainerBleedDirection::BleedToBothEdges)
+    m_hasBleed(false), m_parentalId(), m_bleedDirection(ContainerBleedDirection::BleedAll), m_minHeight(0)
 {
 }
 
@@ -44,7 +46,7 @@ void CollectionTypeElement::SetPadding(const bool value)
 void CollectionTypeElement::ConfigPadding(const ParseContext& context)
 {
     // We set padding when child's style is set explicitly (not None) and is different than the parental style
-    bool padding = (GetStyle() != ContainerStyle::None) && (context.GetParentalContainerStyle() != GetStyle());
+    const bool padding = (GetStyle() != ContainerStyle::None) && (context.GetParentalContainerStyle() != GetStyle());
     SetPadding(padding);
 }
 
@@ -62,7 +64,7 @@ void CollectionTypeElement::SetBleed(const bool value)
 void CollectionTypeElement::ConfigBleed(const AdaptiveCards::ParseContext& context)
 {
     // We allow bleed when the current container has padding and bleed set, and when the parents don't impose a
-    // restiction via bleed direction (i.e. Columnsets)
+    // restiction via bleed direction
     const AdaptiveSharedNamespace::InternalId id = context.PaddingParentInternalId();
     const bool canBleed = GetPadding() && GetBleed();
     if (canBleed && context.GetBleedDirection() != ContainerBleedDirection::BleedRestricted)
@@ -101,6 +103,16 @@ std::shared_ptr<BackgroundImage> CollectionTypeElement::GetBackgroundImage() con
 void CollectionTypeElement::SetBackgroundImage(const std::shared_ptr<BackgroundImage> value)
 {
     m_backgroundImage = value;
+}
+
+unsigned int CollectionTypeElement::GetMinHeight() const
+{
+    return m_minHeight;
+}
+
+void CollectionTypeElement::SetMinHeight(const unsigned int value)
+{
+    m_minHeight = value;
 }
 
 std::shared_ptr<BaseActionElement> CollectionTypeElement::GetSelectAction() const
@@ -142,6 +154,11 @@ Json::Value CollectionTypeElement::SerializeToJsonValue() const
     if (GetBleed())
     {
         root[AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Bleed)] = true;
+    }
+
+    if (m_minHeight)
+    {
+        root[AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::MinHeight)] = std::to_string(GetMinHeight()) + "px";
     }
 
     return root;

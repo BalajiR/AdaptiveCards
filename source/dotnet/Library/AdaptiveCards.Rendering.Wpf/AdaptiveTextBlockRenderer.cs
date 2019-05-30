@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System;
 using System.Globalization;
 using System.IO;
@@ -62,11 +64,6 @@ namespace AdaptiveCards.Rendering.Wpf
 
             }
 
-            if (!textBlock.IsVisible)
-            {
-                uiTextBlock.Visibility = Visibility.Collapsed;
-            }
-
             return uiTextBlock;
         }
 
@@ -88,11 +85,21 @@ namespace AdaptiveCards.Rendering.Wpf
 
             uiTextBlock.TextWrapping = TextWrapping.NoWrap;
 
-            uiTextBlock.FontFamily = new FontFamily(context.Config.GetFontFamily(textBlock.FontStyle));
-            uiTextBlock.FontWeight = FontWeight.FromOpenTypeWeight(context.Config.GetFontWeight(textBlock.FontStyle, textBlock.Weight));
-            uiTextBlock.FontSize = context.Config.GetFontSize(textBlock.FontStyle, textBlock.Size);
+            uiTextBlock.FontFamily = new FontFamily(RendererUtil.GetFontFamilyFromList(context.Config.GetFontFamily(textBlock.FontType)));
+            uiTextBlock.FontWeight = FontWeight.FromOpenTypeWeight(context.Config.GetFontWeight(textBlock.FontType, textBlock.Weight));
+            uiTextBlock.FontSize = context.Config.GetFontSize(textBlock.FontType, textBlock.Size);
 
             uiTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+
+            if (textBlock.Italic)
+            {
+                uiTextBlock.FontStyle = FontStyles.Italic;
+            }
+
+            if (textBlock.Strikethrough)
+            {
+                uiTextBlock.TextDecorations = TextDecorations.Strikethrough;
+            }
 
             if (textBlock.HorizontalAlignment != AdaptiveHorizontalAlignment.Left)
             {

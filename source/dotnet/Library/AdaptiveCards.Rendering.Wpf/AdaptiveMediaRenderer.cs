@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -144,11 +146,6 @@ namespace AdaptiveCards.Rendering.Wpf
                     e.Handled = true;
                 }
             };
-
-            if(!media.IsVisible)
-            {
-                uiMedia.Visibility = Visibility.Collapsed;
-            }
 
             return uiMedia;
         }

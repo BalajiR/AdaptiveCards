@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include "pch.h"
 #include "ParseContext.h"
 #include "AdaptiveCardParseException.h"
@@ -9,12 +11,13 @@ namespace AdaptiveSharedNamespace
     ParseContext::ParseContext() :
         elementParserRegistration{std::make_shared<ElementParserRegistration>()},
         actionParserRegistration{std::make_shared<ActionParserRegistration>()}, warnings{}, m_idStack{}, m_elementIds{},
-        m_parentalContainerStyles{}, m_parentalPadding{}, m_parentalBleedDirection{}
+        m_parentalContainerStyles{}, m_parentalPadding{}, m_parentalBleedDirection{}, m_canFallbackToAncestor(false)
     {
     }
 
     ParseContext::ParseContext(std::shared_ptr<ElementParserRegistration> elementRegistration, std::shared_ptr<ActionParserRegistration> actionRegistration) :
-        warnings{}, m_idStack{}, m_elementIds{}, m_parentalContainerStyles{}, m_parentalPadding{}, m_parentalBleedDirection{}
+        warnings{}, m_idStack{}, m_elementIds{}, m_parentalContainerStyles{}, m_parentalPadding{}, m_parentalBleedDirection{},
+        m_canFallbackToAncestor(false)
     {
         elementParserRegistration = (elementRegistration) ? elementRegistration : std::make_shared<ElementParserRegistration>();
         actionParserRegistration = (actionRegistration) ? actionRegistration : std::make_shared<ActionParserRegistration>();
@@ -246,12 +249,15 @@ namespace AdaptiveSharedNamespace
 
     ContainerStyle ParseContext::GetParentalContainerStyle() const
     {
-        return m_parentalContainerStyles.size() ? m_parentalContainerStyles.back() : ContainerStyle::None;
+        return m_parentalContainerStyles.size() ? m_parentalContainerStyles.back() : ContainerStyle::Default;
     }
 
     void ParseContext::SetParentalContainerStyle(const ContainerStyle style)
     {
-        m_parentalContainerStyles.push_back(style);
+        if (style != ContainerStyle::None)
+        {
+            m_parentalContainerStyles.push_back(style);
+        }
     }
 
     AdaptiveSharedNamespace::InternalId ParseContext::PaddingParentInternalId(void) const
@@ -277,7 +283,7 @@ namespace AdaptiveSharedNamespace
         // if current container gets padding, it resets container bleed state to not restricted
         if (current.GetPadding())
         {
-            PushBleedDirection(ContainerBleedDirection::BleedToBothEdges);
+            PushBleedDirection(ContainerBleedDirection::BleedAll);
             m_parentalPadding.push_back(current.GetInternalId());
         }
     }
@@ -306,7 +312,7 @@ namespace AdaptiveSharedNamespace
         }
         else
         {
-            return ContainerBleedDirection::BleedToBothEdges;
+            return ContainerBleedDirection::BleedAll;
         }
     }
 

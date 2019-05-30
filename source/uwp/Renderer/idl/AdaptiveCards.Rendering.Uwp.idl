@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include <sdkddkver.h>
 
 import "inspectable.idl";
@@ -59,8 +61,8 @@ AdaptiveNamespaceStart
 
     runtimeclass AdaptiveFontSizesConfig;
     runtimeclass AdaptiveFontWeightsConfig;
-    runtimeclass AdaptiveFontStyleDefinition;
-    runtimeclass AdaptiveFontStylesDefinition;
+    runtimeclass AdaptiveFontTypeDefinition;
+    runtimeclass AdaptiveFontTypesDefinition;
     runtimeclass AdaptiveColorsConfig;
     runtimeclass AdaptiveColorConfig;
     runtimeclass AdaptiveTextConfig;
@@ -89,6 +91,7 @@ AdaptiveNamespaceStart
 
     runtimeclass AdaptiveElementParserRegistration;
     runtimeclass AdaptiveActionParserRegistration;
+    runtimeclass AdaptiveFeatureRegistration;
     runtimeclass AdaptiveElementRendererRegistration;
     runtimeclass AdaptiveActionRendererRegistration;
     runtimeclass AdaptiveCardRenderer;
@@ -149,8 +152,8 @@ AdaptiveNamespaceStart
 
     interface IAdaptiveFontSizesConfig;
     interface IAdaptiveFontWeightsConfig;
-    interface IAdaptiveFontStyleDefinition;
-    interface IAdaptiveFontStylesDefinition;
+    interface IAdaptiveFontTypeDefinition;
+    interface IAdaptiveFontTypesDefinition;
     interface IAdaptiveColorConfig;
     interface IAdaptiveColorsConfig;
     interface IAdaptiveTextConfig;
@@ -172,6 +175,7 @@ AdaptiveNamespaceStart
 
     interface IAdaptiveElementParserRegistration;
     interface IAdaptiveActionParserRegistration;
+    interface IAdaptiveFeatureRegistration;
     interface IAdaptiveElementParser;
     interface IAdaptiveActionParser;
 
@@ -257,14 +261,13 @@ AdaptiveNamespaceStart
         [contract(InternalContract, 1)]
         [internal]
 #endif
-        typedef [v1_enum] enum
-            Mode
+        typedef [v1_enum] enum BackgroundImageFillMode
         {
-            Stretch = 0,
+            Cover = 0,
             RepeatHorizontally,
             RepeatVertically,
             Repeat
-        } BackgroundImageMode;
+        } BackgroundImageFillMode;
 
     [version(NTDDI_WIN10_RS1)]
 #ifdef ADAPTIVE_CARDS_WINDOWS
@@ -434,10 +437,10 @@ AdaptiveNamespaceStart
     [contract(InternalContract, 1)]
     [internal]
 #endif
-    typedef [v1_enum] enum FontStyle {
+    typedef [v1_enum] enum FontType {
         Default = 0,
         Monospace
-    } FontStyle;
+    } FontType;
 
     [version(NTDDI_WIN10_RS1)]
 #ifdef ADAPTIVE_CARDS_WINDOWS
@@ -469,7 +472,8 @@ AdaptiveNamespaceStart
         UnsupportedSchemaVersion,
         UnsupportedMediaType,
         InvalidMediaMix,
-        UnsupportedValue
+        UnsupportedValue,
+        PerformingFallback
     } WarningStatusCode;
 
     [version(NTDDI_WIN10_RS1)]
@@ -526,6 +530,19 @@ AdaptiveNamespaceStart
         Content
     } FallbackType;
 
+    [version(NTDDI_WIN10_RS1), flags]
+#ifdef ADAPTIVE_CARDS_WINDOWS
+    [contract(InternalContract, 1)][internal]
+#endif
+    typedef[v1_enum] enum BleedDirection {
+        None = 0x0000,
+        Left = 0x0001,
+        Right = 0x0010,
+        Up = 0x0100,
+        Down = 0x1000,
+        All = Left | Right | Up | Down
+    } BleedDirection;
+
     declare
     {
         interface Windows.Foundation.Collections.IVector<IAdaptiveCardElement*>;
@@ -574,9 +591,6 @@ AdaptiveNamespaceStart
         [propget] HRESULT IsVisible([out, retval] boolean* value);
         [propput] HRESULT IsVisible([in] boolean value);
 
-        [propget] HRESULT MinHeight([out, retval] UINT32* value);
-        [propput] HRESULT MinHeight([in] UINT32 value);
-
         [propget] HRESULT FallbackType([out, retval] FallbackType * value);
         [propput] HRESULT FallbackType([in] FallbackType value);
         [propget] HRESULT FallbackContent([out, retval] IAdaptiveCardElement ** content);
@@ -584,6 +598,8 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT AdditionalProperties([out, retval] Windows.Data.Json.JsonObject** json);
         [propput] HRESULT AdditionalProperties([in] Windows.Data.Json.JsonObject* json);
+
+        HRESULT MeetsRequirements([in] AdaptiveFeatureRegistration * featureRegistration, [out, retval] boolean * value);
 
         HRESULT ToJson([out, retval] Windows.Data.Json.JsonObject** value);
     };
@@ -700,8 +716,8 @@ AdaptiveNamespaceStart
         [propget] HRESULT Language([out, retval] HSTRING * value);
         [propput] HRESULT Language([in] HSTRING value);
 
-        [propget] HRESULT FontStyle([out, retval] FontStyle * value);
-        [propput] HRESULT FontStyle([in] FontStyle value);
+        [propget] HRESULT FontType([out, retval] FontType * value);
+        [propput] HRESULT FontType([in] FontType value);
     };
 
     [
@@ -733,7 +749,7 @@ AdaptiveNamespaceStart
      internal,
      activatable(InternalContract, 1)
 #endif
-    ] runtimeclass AdaptiveTextBlock 
+    ] runtimeclass AdaptiveTextBlock
     {
         [default] interface IAdaptiveTextBlock;
         interface IAdaptiveTextElement;
@@ -749,7 +765,7 @@ AdaptiveNamespaceStart
 #else
         uuid(0AC70C29-FA90-4C28-A6D1-A6EF58126085)
 #endif
-    ] 
+    ]
     interface IAdaptiveInline : IInspectable
     {
     };
@@ -764,9 +780,15 @@ AdaptiveNamespaceStart
 #else
         uuid(09BBE759-0754-441D-B808-3CE2C188D521)
 #endif
-    ] 
+    ]
     interface IAdaptiveTextRun : IInspectable requires IAdaptiveTextElement
     {
+        [propget] HRESULT Italic([out, retval] boolean * value);
+        [propput] HRESULT Italic([in] boolean value);
+
+        [propget] HRESULT Strikethrough([out, retval] boolean * value);
+        [propput] HRESULT Strikethrough([in] boolean value);
+
         [propget] HRESULT Highlight([out, retval] boolean * value);
         [propput] HRESULT Highlight([in] boolean value);
 
@@ -782,42 +804,12 @@ AdaptiveNamespaceStart
         internal,
         activatable(InternalContract, 1)
 #endif
-    ] 
+    ]
     runtimeclass AdaptiveTextRun
-    { 
+    {
         [default] interface IAdaptiveTextRun;
-        interface IAdaptiveInline; 
+        interface IAdaptiveInline;
         interface IAdaptiveTextElement;
-    };
-
-    [
-        version(NTDDI_WIN10_RS1),
-        exclusiveto(AdaptiveParagraph),
-#ifdef ADAPTIVE_CARDS_WINDOWS
-        uuid(08EBC76C-BC30-4CC4-BBC7-EEEBDF40ADBF),
-        contract(InternalContract, 1),
-        internal
-#else
-        uuid(B462F8E9-E64F-4698-923B-0E7A9676BEEE)
-#endif
-    ] 
-    interface IAdaptiveParagraph : IInspectable
-    {
-        [propget] HRESULT Inlines([out, retval] Windows.Foundation.Collections.IVector<IAdaptiveInline*>** value);
-    };
-
-    [
-        version(NTDDI_WIN10_RS1),
-        activatable(NTDDI_WIN10_RS1),
-#ifdef ADAPTIVE_CARDS_WINDOWS
-        contract(InternalContract, 1),
-        internal,
-        activatable(InternalContract, 1)
-#endif
-    ] 
-    runtimeclass AdaptiveParagraph 
-    {
-        [default] interface IAdaptiveParagraph;
     };
 
     [
@@ -830,18 +822,13 @@ AdaptiveNamespaceStart
 #else
         uuid(6095E4E2-BFA7-41C6-B12E-887F980196A9)
 #endif
-    ] interface IAdaptiveRichTextBlock : IInspectable
+    ]
+    interface IAdaptiveRichTextBlock : IInspectable
     {
-        [propget] HRESULT Wrap([out, retval] boolean* value);
-        [propput] HRESULT Wrap([in] boolean value);
-
         [propget] HRESULT HorizontalAlignment([out, retval] HAlignment* value);
         [propput] HRESULT HorizontalAlignment([in] HAlignment value);
 
-        [propget] HRESULT MaxLines([out, retval] UINT32* value);
-        [propput] HRESULT MaxLines([in] UINT32 value);
-
-        [propget] HRESULT Paragraphs([out, retval] Windows.Foundation.Collections.IVector<AdaptiveParagraph*>** value);
+        [propget] HRESULT Inlines([out, retval] Windows.Foundation.Collections.IVector<IAdaptiveInline*>** value);
     };
 
     [
@@ -945,8 +932,8 @@ AdaptiveNamespaceStart
         [propget] HRESULT Url([out, retval] HSTRING * value);
         [propput] HRESULT Url([in] HSTRING value);
 
-        [propget] HRESULT Mode([out, retval] BackgroundImageMode * value);
-        [propput] HRESULT Mode([in] BackgroundImageMode value);
+        [propget] HRESULT FillMode([out, retval] BackgroundImageFillMode * value);
+        [propput] HRESULT FillMode([in] BackgroundImageFillMode value);
 
         [propget] HRESULT HorizontalAlignment([out, retval] HAlignment * value);
         [propput] HRESULT HorizontalAlignment([in] HAlignment value);
@@ -1012,6 +999,9 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT Height([out, retval] HeightType* value);
         [propput] HRESULT Height([in] HeightType value);
+
+        [propget] HRESULT MinHeight([out, retval] UINT32* value);
+        [propput] HRESULT MinHeight([in] UINT32 value);
 
         HRESULT ToJson([out, retval] Windows.Data.Json.JsonObject** value);
 
@@ -1509,6 +1499,33 @@ AdaptiveNamespaceStart
 
     [
         version(NTDDI_WIN10_RS1),
+#ifdef ADAPTIVE_CARDS_WINDOWS
+        uuid(F0B8422A-FE6B-40C4-87D8-7D3480774D75),
+        contract(InternalContract, 1),
+        internal
+#else
+        uuid(7989B476-BEC2-4D4E-B84E-EC9816B4E0DE)
+#endif
+    ]
+    interface IAdaptiveContainerBase : IInspectable
+    {
+        [propget] HRESULT Style([out, retval] ContainerStyle* value);
+        [propput] HRESULT Style([in] ContainerStyle value);
+
+        [propget] HRESULT SelectAction([out, retval] IAdaptiveActionElement** value);
+        [propput] HRESULT SelectAction([in] IAdaptiveActionElement* value);
+
+        [propget] HRESULT Bleed([out, retval] boolean* value);
+        [propput] HRESULT Bleed([in] boolean value);
+
+        [propget] HRESULT BleedDirection([out, retval] BleedDirection* bleedDirection);
+
+        [propget] HRESULT MinHeight([out, retval] UINT32 * value);
+        [propput] HRESULT MinHeight([in] UINT32 value);
+    };
+
+    [
+        version(NTDDI_WIN10_RS1),
         exclusiveto(AdaptiveContainer),
 #ifdef ADAPTIVE_CARDS_WINDOWS
         uuid(60554c5a-32db-4130-8613-d39737ced7c4),
@@ -1518,18 +1535,12 @@ AdaptiveNamespaceStart
         uuid(ba90da3f-556c-4e3a-9d01-11f2ce78dcd7)
 #endif
     ]
-    interface IAdaptiveContainer : IInspectable
+    interface IAdaptiveContainer : IInspectable requires IAdaptiveContainerBase
     {
-        [propget] HRESULT Style([out, retval] ContainerStyle* value);
-        [propput] HRESULT Style([in] ContainerStyle value);
-
         [propget] HRESULT VerticalContentAlignment([out, retval] VerticalContentAlignment* value);
         [propput] HRESULT VerticalContentAlignment([in] VerticalContentAlignment value);
 
         [propget] HRESULT Items([out, retval] Windows.Foundation.Collections.IVector<IAdaptiveCardElement*>** value);
-
-        [propget] HRESULT SelectAction([out, retval] IAdaptiveActionElement** value);
-        [propput] HRESULT SelectAction([in] IAdaptiveActionElement* value);
 
         [propget] HRESULT BackgroundImage([out, retval] AdaptiveBackgroundImage * *value);
         [propput] HRESULT BackgroundImage([in] AdaptiveBackgroundImage * value);
@@ -1547,6 +1558,7 @@ AdaptiveNamespaceStart
     runtimeclass AdaptiveContainer
     {
         [default] interface IAdaptiveContainer;
+        interface IAdaptiveContainerBase;
         interface IAdaptiveCardElement;
     };
 
@@ -1561,7 +1573,7 @@ AdaptiveNamespaceStart
         uuid(91e03800-d239-43bc-b5fb-2ccfe0cc7fcb)
 #endif
     ]
-    interface IAdaptiveColumn : IInspectable
+    interface IAdaptiveColumn : IInspectable requires IAdaptiveContainerBase
     {
         [propget] HRESULT Width([out, retval] HSTRING* value);
         [propput] HRESULT Width([in] HSTRING value);
@@ -1569,15 +1581,10 @@ AdaptiveNamespaceStart
         [propget] HRESULT PixelWidth([out, retval] UINT32* value);
         [propput] HRESULT PixelWidth([in] UINT32 value);
 
-        [propget] HRESULT Style([out, retval] ContainerStyle* value);
-        [propput] HRESULT Style([in] ContainerStyle value);
-
         [propget] HRESULT VerticalContentAlignment([out, retval] VerticalContentAlignment* value);
         [propput] HRESULT VerticalContentAlignment([in] VerticalContentAlignment value);
 
         [propget] HRESULT Items([out, retval] Windows.Foundation.Collections.IVector<IAdaptiveCardElement*>** value);
-        [propget] HRESULT SelectAction([out, retval] IAdaptiveActionElement** value);
-        [propput] HRESULT SelectAction([in] IAdaptiveActionElement* value);
 
         [propget] HRESULT BackgroundImage([out, retval] AdaptiveBackgroundImage * *value);
         [propput] HRESULT BackgroundImage([in] AdaptiveBackgroundImage * value);
@@ -1595,6 +1602,7 @@ AdaptiveNamespaceStart
     runtimeclass AdaptiveColumn
     {
         [default] interface IAdaptiveColumn;
+        interface IAdaptiveContainerBase;
         interface IAdaptiveCardElement;
     };
 
@@ -1609,15 +1617,9 @@ AdaptiveNamespaceStart
         uuid(4e3e1cd1-906b-4718-96ea-0a6e16bf0199)
 #endif
     ]
-    interface IAdaptiveColumnSet : IInspectable
+    interface IAdaptiveColumnSet : IInspectable requires IAdaptiveContainerBase
     {
         [propget] HRESULT Columns([out, retval] Windows.Foundation.Collections.IVector<AdaptiveColumn*>** value);
-
-        [propget] HRESULT SelectAction([out, retval] IAdaptiveActionElement** value);
-        [propput] HRESULT SelectAction([in] IAdaptiveActionElement* value);
-
-        [propget] HRESULT Style([out, retval] ContainerStyle* value);
-        [propput] HRESULT Style([in] ContainerStyle value);
     };
 
     [
@@ -1632,6 +1634,7 @@ AdaptiveNamespaceStart
     runtimeclass AdaptiveColumnSet
     {
         [default] interface IAdaptiveColumnSet;
+        interface IAdaptiveContainerBase;
         interface IAdaptiveCardElement;
     };
 
@@ -1818,6 +1821,9 @@ AdaptiveNamespaceStart
         [propget] HRESULT OverrideStyles([out, retval] Windows.UI.Xaml.ResourceDictionary** overrideDictionary);
         [propput] HRESULT OverrideStyles([in] Windows.UI.Xaml.ResourceDictionary* overrideDictionary);
 
+        [propget] HRESULT FeatureRegistration([out, retval] AdaptiveFeatureRegistration * *featureRegistration);
+        [propput] HRESULT FeatureRegistration([in] AdaptiveFeatureRegistration * featureRegistration);
+
         HRESULT SetFixedDimensions([in] UINT32 desiredWidth, [in] UINT32 desiredHeight);
         HRESULT ResetFixedDimensions();
 
@@ -1924,9 +1930,6 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT ForegroundColors([out, retval] AdaptiveColorsConfig** value);
         [propput] HRESULT ForegroundColors([in] AdaptiveColorsConfig* value);
-
-        [propget] HRESULT HighlightColors([out, retval] AdaptiveColorsConfig * *value);
-        [propput] HRESULT HighlightColors([in] AdaptiveColorsConfig * value);
     };
 
     [
@@ -2071,7 +2074,7 @@ AdaptiveNamespaceStart
 
     [
         version(NTDDI_WIN10_RS1),
-        exclusiveto(AdaptiveFontStyleDefinition),
+        exclusiveto(AdaptiveFontTypeDefinition),
 #ifdef ADAPTIVE_CARDS_WINDOWS
         uuid(485E4650-EDF1-4DAD-BB1A-FA6C85626453),
         contract(InternalContract, 1),
@@ -2080,7 +2083,7 @@ AdaptiveNamespaceStart
         uuid(9D744C66-DC57-4D4B-9997-D16761FB11D1)
 #endif
     ]
-    interface IAdaptiveFontStyleDefinition : IInspectable
+    interface IAdaptiveFontTypeDefinition : IInspectable
     {
         [propget] HRESULT FontFamily([out, retval] HSTRING* value);
         [propput] HRESULT FontFamily([in] HSTRING value);
@@ -2101,14 +2104,14 @@ AdaptiveNamespaceStart
         activatable(InternalContract, 1)
 #endif
     ]
-    runtimeclass AdaptiveFontStyleDefinition
+    runtimeclass AdaptiveFontTypeDefinition
     {
-        [default] interface IAdaptiveFontStyleDefinition;
+        [default] interface IAdaptiveFontTypeDefinition;
     };
 
     [
         version(NTDDI_WIN10_RS1),
-        exclusiveto(AdaptiveFontStylesDefinition),
+        exclusiveto(AdaptiveFontTypesDefinition),
 #ifdef ADAPTIVE_CARDS_WINDOWS
         uuid(7EA49458-870F-40C9-908A-35E6A20579C6),
         contract(InternalContract, 1),
@@ -2117,13 +2120,13 @@ AdaptiveNamespaceStart
         uuid(2445D5BF-F0DF-495D-873E-F5B36E53E5D1)
 #endif
     ]
-    interface IAdaptiveFontStylesDefinition : IInspectable
+    interface IAdaptiveFontTypesDefinition : IInspectable
     {
-        [propget] HRESULT Default([out, retval] AdaptiveFontStyleDefinition** value);
-        [propput] HRESULT Default([in] AdaptiveFontStyleDefinition* value);
+        [propget] HRESULT Default([out, retval] AdaptiveFontTypeDefinition** value);
+        [propput] HRESULT Default([in] AdaptiveFontTypeDefinition* value);
 
-        [propget] HRESULT Monospace([out, retval] AdaptiveFontStyleDefinition** value);
-        [propput] HRESULT Monospace([in] AdaptiveFontStyleDefinition* value);
+        [propget] HRESULT Monospace([out, retval] AdaptiveFontTypeDefinition** value);
+        [propput] HRESULT Monospace([in] AdaptiveFontTypeDefinition* value);
     };
 
     [
@@ -2135,9 +2138,43 @@ AdaptiveNamespaceStart
         activatable(InternalContract, 1)
 #endif
     ]
-    runtimeclass AdaptiveFontStylesDefinition
+    runtimeclass AdaptiveFontTypesDefinition
     {
-        [default] interface IAdaptiveFontStylesDefinition;
+        [default] interface IAdaptiveFontTypesDefinition;
+    };
+
+    [
+        version(NTDDI_WIN10_RS1),
+        exclusiveto(AdaptiveHighlightColorConfig),
+#ifdef ADAPTIVE_CARDS_WINDOWS
+        uuid(DAF30E1C-8437-4A88-B711-1F4574CE3C94),
+        contract(InternalContract, 1),
+        internal
+#else
+        uuid(7E71F583-1DAD-4A87-B2F9-1118476BB848)
+#endif
+    ]
+    interface IAdaptiveHighlightColorConfig : IInspectable
+    {
+        [propget] HRESULT Default([out][retval] Windows.UI.Color * value);
+        [propput] HRESULT Default([in] Windows.UI.Color value);
+
+        [propget] HRESULT Subtle([out][retval] Windows.UI.Color * value);
+        [propput] HRESULT Subtle([in] Windows.UI.Color value);
+    };
+
+    [
+        version(NTDDI_WIN10_RS1),
+        activatable(NTDDI_WIN10_RS1),
+#ifdef ADAPTIVE_CARDS_WINDOWS
+        contract(InternalContract, 1),
+        internal,
+        activatable(InternalContract, 1)
+#endif
+    ]
+    runtimeclass AdaptiveHighlightColorConfig
+    {
+        [default] interface IAdaptiveHighlightColorConfig;
     };
 
     [
@@ -2158,6 +2195,9 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT Subtle([out][retval] Windows.UI.Color* value);
         [propput] HRESULT Subtle([in] Windows.UI.Color value);
+
+        [propget] HRESULT HighlightColors([out, retval] AdaptiveHighlightColorConfig * *value);
+        [propput] HRESULT HighlightColors([in] AdaptiveHighlightColorConfig * value);
     };
 
     [
@@ -2667,8 +2707,8 @@ AdaptiveNamespaceStart
         [propget] HRESULT FontWeights([out, retval] AdaptiveFontWeightsConfig** value);
         [propput] HRESULT FontWeights([in] AdaptiveFontWeightsConfig* value);
 
-        [propget] HRESULT FontStyles([out, retval] AdaptiveFontStylesDefinition** value);
-        [propput] HRESULT FontStyles([in] AdaptiveFontStylesDefinition* value);
+        [propget] HRESULT FontTypes([out, retval] AdaptiveFontTypesDefinition** value);
+        [propput] HRESULT FontTypes([in] AdaptiveFontTypesDefinition* value);
 
         [propget] HRESULT SupportsInteractivity([out, retval] boolean* value);
         [propput] HRESULT SupportsInteractivity([in] boolean value);
@@ -2800,8 +2840,8 @@ AdaptiveNamespaceStart
         [propget] HRESULT IconUrl([out, retval] HSTRING* value);
         [propput] HRESULT IconUrl([in] HSTRING value);
 
-        [propget] HRESULT Sentiment([out, retval] HSTRING* value);
-        [propput] HRESULT Sentiment([in] HSTRING value);
+        [propget] HRESULT Style([out, retval] HSTRING* value);
+        [propput] HRESULT Style([in] HSTRING value);
 
         [propget] HRESULT AdditionalProperties([out, retval] Windows.Data.Json.JsonObject** json);
         [propput] HRESULT AdditionalProperties([in] Windows.Data.Json.JsonObject* json);
@@ -3143,6 +3183,38 @@ AdaptiveNamespaceStart
 
     [
         version(NTDDI_WIN10_RS1),
+        exclusiveto(AdaptiveFeatureRegistration),
+#ifdef ADAPTIVE_CARDS_WINDOWS
+        uuid(b2a455fd-385c-45eb-89ce-007b7ed0a815),
+        contract(InternalContract, 1),
+        internal
+#else
+        uuid(5b639a4d-898a-4c63-8cfe-592437201830)
+#endif
+    ] interface IAdaptiveFeatureRegistration : IInspectable
+    {
+        HRESULT Set([in] HSTRING name, [in] HSTRING version);
+        HRESULT Get([in] HSTRING name, [out, retval] HSTRING * version);
+        HRESULT Remove([in] HSTRING name);
+    };
+
+    [
+        version(NTDDI_WIN10_RS1),
+        activatable(NTDDI_WIN10_RS1),
+#ifdef ADAPTIVE_CARDS_WINDOWS
+        contract(InternalContract, 1),
+        internal,
+        activatable(InternalContract, 1)
+#endif
+    ]
+    runtimeclass AdaptiveFeatureRegistration
+    {
+        [default] interface IAdaptiveFeatureRegistration;
+    };
+
+
+    [
+        version(NTDDI_WIN10_RS1),
 #ifdef ADAPTIVE_CARDS_WINDOWS
         uuid(3324e9f6-86f0-4d59-a06f-6bb464ffd558),
         contract(InternalContract, 1),
@@ -3400,6 +3472,8 @@ AdaptiveNamespaceStart
     {
         [propget] HRESULT HostConfig([out, retval] AdaptiveHostConfig** value);
 
+        [propget] HRESULT FeatureRegistration([out, retval] AdaptiveFeatureRegistration** value);
+
         [propget] HRESULT ElementRenderers([out, retval] AdaptiveElementRendererRegistration** value);
 
         [propget] HRESULT ActionRenderers([out, retval] AdaptiveActionRendererRegistration** value);
@@ -3412,7 +3486,7 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT OverrideStyles([out, retval] Windows.UI.Xaml.ResourceDictionary** overrideDictionary);
 
-        [propget] HRESULT UserInputs([out, retval] AdaptiveInputs * *value);
+        [propget] HRESULT UserInputs([out, retval] AdaptiveInputs** value);
 
         HRESULT AddInputValue([in] IAdaptiveInputValue* inputValue);
 
@@ -3493,7 +3567,7 @@ AdaptiveNamespaceStart
      internal,
      activatable(InternalContract, 1)
 #endif
-    ] runtimeclass AdaptiveRichTextBlockRenderer 
+    ] runtimeclass AdaptiveRichTextBlockRenderer
     {
         [default] interface IAdaptiveElementRenderer;
         interface IAdaptiveElementParser;
