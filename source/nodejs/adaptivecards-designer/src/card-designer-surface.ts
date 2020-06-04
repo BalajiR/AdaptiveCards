@@ -5,11 +5,35 @@ import * as Controls from "adaptivecards-controls";
 import { DraggableElement } from "./draggable-element";
 import { IPoint } from "./miscellaneous";
 import * as DesignerPeers from "./designer-peers";
+import * as ACData from "adaptivecards-templating";
+import * as Shared from "./shared";
+import { HostContainer } from "./containers";
+import { FieldDefinition } from "./data";
+
+export enum BindingPreviewMode {
+    NoPreview,
+    GeneratedData,
+    SampleData
+}
 
 export type CardElementType = { new(): Adaptive.CardElement };
 export type ActionType = { new(): Adaptive.Action };
-export type CardElementPeerType = { new(designerSurface: CardDesignerSurface, registration: DesignerPeers.DesignerPeerRegistrationBase, cardElement: Adaptive.CardElement): DesignerPeers.CardElementPeer };
-export type ActionPeerType = { new(designerSurface: CardDesignerSurface, registration: DesignerPeers.DesignerPeerRegistrationBase, action: Adaptive.Action): DesignerPeers.ActionPeer };
+export type CardElementPeerType = {
+    new(
+        parent: DesignerPeers.DesignerPeer,
+        designerSurface: CardDesignerSurface,
+        registration: DesignerPeers.DesignerPeerRegistrationBase,
+        cardElement: Adaptive.CardElement
+    ): DesignerPeers.CardElementPeer
+};
+export type ActionPeerType = {
+    new(
+        parent: DesignerPeers.DesignerPeer,
+        designerSurface: CardDesignerSurface,
+        registration: DesignerPeers.DesignerPeerRegistrationBase,
+        action: Adaptive.Action
+    ): DesignerPeers.ActionPeer
+};
 
 class DesignerPeerCategory {
     static Unknown = "Unknown";
@@ -98,22 +122,9 @@ export class CardElementPeerRegistry extends DesignerPeerRegistry<CardElementTyp
     }
 
     createPeerInstance(designerSurface: CardDesignerSurface, parent: DesignerPeers.DesignerPeer, cardElement: Adaptive.CardElement): DesignerPeers.CardElementPeer {
-        /*
-        var registrationInfo: IDesignerPeerRegistration<CardElementType, CardElementPeerType> = undefined;
-
-        for (var i = 0; i < this._items.length; i++) {
-            if (cardElement instanceof this._items[i].sourceType) {
-                registrationInfo = this._items[i];
-
-                break;
-            }
-        }
-        */
-
         var registrationInfo = this.findTypeRegistration((<any>cardElement).constructor);
 
-        var peer = registrationInfo ? new registrationInfo.peerType(designerSurface, registrationInfo, cardElement) : new DesignerPeers.CardElementPeer(designerSurface, this.defaultRegistration, cardElement);
-        peer.parent = parent;
+        var peer = registrationInfo ? new registrationInfo.peerType(parent, designerSurface, registrationInfo, cardElement) : new DesignerPeers.CardElementPeer(parent, designerSurface, this.defaultRegistration, cardElement);
 
         return peer;
     }
@@ -133,8 +144,7 @@ export class ActionPeerRegistry extends DesignerPeerRegistry<ActionType, ActionP
     createPeerInstance(designerSurface: CardDesignerSurface, parent: DesignerPeers.DesignerPeer, action: Adaptive.Action): DesignerPeers.ActionPeer {
         var registrationInfo = this.findTypeRegistration((<any>action).constructor);
 
-        var peer = registrationInfo ? new registrationInfo.peerType(designerSurface, registrationInfo, action) : new DesignerPeers.ActionPeer(designerSurface, this.defaultRegistration, action);
-        peer.parent = parent;
+        var peer = registrationInfo ? new registrationInfo.peerType(parent, designerSurface, registrationInfo, action) : new DesignerPeers.ActionPeer(parent, designerSurface, this.defaultRegistration, action);
 
         return peer;
     }
@@ -143,7 +153,7 @@ export class ActionPeerRegistry extends DesignerPeerRegistry<ActionType, ActionP
 class DragHandle extends DraggableElement {
     protected internalRender(): HTMLElement {
         let element = document.createElement("div");
-        element.classList.add("acd-peerButton", "acd-icon-drag");
+        element.classList.add("acd-peerButton", "acd-peerButton-icon", "fixedWidth", "circular", "acd-icon-drag");
         element.title = "Drag to move this element";
         element.style.visibility = "hidden";
         element.style.position = "absolute";
@@ -151,6 +161,14 @@ class DragHandle extends DraggableElement {
 
         return element;
     }
+}
+
+export abstract class DesignContext {
+    abstract get hostContainer(): HostContainer;
+    abstract get targetVersion(): Adaptive.Version;
+    abstract get dataStructure(): FieldDefinition;
+    abstract get bindingPreviewMode(): BindingPreviewMode;
+    abstract get sampleData(): any;
 }
 
 export class CardDesignerSurface {
@@ -170,14 +188,15 @@ export class CardDesignerSurface {
     private _dragHandle: DragHandle;
     private _removeCommandElement: HTMLElement;
     private _peerCommandsHostElement: HTMLElement;
-    private _lastParseErrors: Array<Adaptive.IValidationError> = [];
+    private _serializationContext: Adaptive.SerializationContext;
+    private _isPreviewMode: boolean = false;
+    private _dragVisual?: HTMLElement;
 
     private updatePeerCommandsLayout() {
         if (this._selectedPeer) {
             let peerRect = this._selectedPeer.getBoundingRect();
             let dragHandleRect = this._dragHandle.renderedElement.getBoundingClientRect();
             let removeButtonRect = this._removeCommandElement.getBoundingClientRect();
-            let commandsHostRect = this._peerCommandsHostElement.getBoundingClientRect();
 
             this._dragHandle.renderedElement.style.left = (peerRect.left - dragHandleRect.width) + "px";
             this._dragHandle.renderedElement.style.top = (peerRect.top - dragHandleRect.height) + "px";
@@ -185,8 +204,9 @@ export class CardDesignerSurface {
             this._removeCommandElement.style.left = peerRect.right + "px";
             this._removeCommandElement.style.top = (peerRect.top - removeButtonRect.height) + "px";
 
-            this._peerCommandsHostElement.style.left = (peerRect.right - commandsHostRect.width) + "px";
+            this._peerCommandsHostElement.style.left = peerRect.left + "px";
             this._peerCommandsHostElement.style.top = (peerRect.bottom + 2) + "px";
+            this._peerCommandsHostElement.style.width = peerRect.width + "px";
 
             this._dragHandle.renderedElement.style.visibility = this._selectedPeer.isDraggable() ? "visible" : "hidden";
             this._removeCommandElement.style.visibility = this._selectedPeer.canBeRemoved() ? "visible" : "hidden";
@@ -212,7 +232,7 @@ export class CardDesignerSurface {
             if (this._selectedPeer) {
                 this._selectedPeer.isSelected = true;
 
-                let commands = this._selectedPeer.getCommands();
+                let commands = this._selectedPeer.getCommands(this.context);
 
                 for (let command of commands) {
                     this._peerCommandsHostElement.appendChild(command.render());
@@ -230,8 +250,6 @@ export class CardDesignerSurface {
     }
 
     private peerChanged(peer: DesignerPeers.DesignerPeer, updatePropertySheet: boolean) {
-        this._lastParseErrors = [];
-
         this.renderCard()
         this.updateLayout();
 
@@ -256,19 +274,88 @@ export class CardDesignerSurface {
     private renderCard() {
         this._cardHost.innerHTML = "";
 
-        if (this.card) {
-            if (this.onCardValidated) {
-                this.onCardValidated(this._lastParseErrors, this.card.validateProperties());
+        if (this.onCardValidated) {
+            let allValidationEvents: Adaptive.IValidationEvent[] = [];
+
+            for (let i = 0; i < this._serializationContext.eventCount; i++) {
+                allValidationEvents.push(this._serializationContext.getEventAt(i));
             }
 
-            let renderedCard = this.card.render();
+            allValidationEvents.push(...this.card.validateProperties().validationEvents);
 
-            if (this.fixedHeightCard) {
-                renderedCard.style.height = "100%";
-            }
-
-            this._cardHost.appendChild(renderedCard);
+            this.onCardValidated(allValidationEvents);
         }
+
+        let cardToRender: Adaptive.AdaptiveCard = this.card;
+
+        if (this.isPreviewMode) {
+            let inputPayload = this.card.toJSON(this._serializationContext);
+
+            cardToRender = new Adaptive.AdaptiveCard();
+            cardToRender.hostConfig = this.card.hostConfig;
+            cardToRender.onExecuteAction = (action: Adaptive.Action) => {
+                let message: string = "Action executed\n";
+                message += "    Title: " + action.title + "\n";
+
+                if (action instanceof Adaptive.OpenUrlAction) {
+                    message += "    Type: OpenUrl\n";
+                    message += "    Url: " + action.url + "\n";
+                }
+                else if (action instanceof Adaptive.SubmitAction) {
+                    message += "    Type: Submit";
+                    message += "    Data: " + JSON.stringify(action.data);
+                }
+                else if (action instanceof Adaptive.HttpAction) {
+                    message += "    Type: Http\n";
+                    message += "    Url: " + action.url + "\n";
+                    message += "    Method: " + action.method + "\n";
+                    message += "    Headers:\n";
+
+                    for (let header of action.headers) {
+                        message += "        " + header.name + ": " + header.value + "\n";
+                    }
+
+                    message += "    Body: " + action.body + "\n";
+                }
+                else {
+                    message += "    Type: <unknown>";
+                }
+
+                alert(message);
+            };
+
+            let outputPayload = inputPayload;
+
+            if (Shared.GlobalSettings.enableDataBindingSupport) {
+                try {
+                    let template = new ACData.Template(inputPayload);
+
+                    let evaluationContext: ACData.IEvaluationContext;
+
+                    if (this.context.bindingPreviewMode === BindingPreviewMode.SampleData) {
+                        evaluationContext = { $root: this.context.sampleData };
+                    }
+                    else {
+                        evaluationContext = { $root: this.context.dataStructure.dataType.generateSampleData() };
+                    }
+
+                    outputPayload = template.expand(evaluationContext);
+                }
+                catch (e) {
+                    console.log("Template expansion error: " + e.message);
+                }
+            }
+
+            cardToRender.parse(outputPayload, new Adaptive.SerializationContext());
+        }
+
+        let renderedCard = cardToRender.render();
+
+        if (this.fixedHeightCard) {
+            renderedCard.style.height = "100%";
+
+        }
+        this._cardHost.appendChild(renderedCard);
     }
 
     private addPeer(peer: DesignerPeers.DesignerPeer) {
@@ -294,7 +381,7 @@ export class CardDesignerSurface {
                 this.updateLayout();
             };
             peer.onStartDrag = (sender: DesignerPeers.DesignerPeer) => { this.startDrag(sender); }
-            peer.onEndDrag = (sender: DesignerPeers.DesignerPeer) => { this.endDrag(); }
+            peer.onEndDrag = (sender: DesignerPeers.DesignerPeer) => { this.endDrag(false); }
 
             peer.addElementsToDesignerSurface(this._designerSurface);
 
@@ -370,7 +457,7 @@ export class CardDesignerSurface {
             if (!peer) {
                 let registration = CardDesignerSurface.cardElementPeerRegistry.findTypeRegistration(Adaptive.AdaptiveCard);
 
-                peer = new registration.peerType(this, registration, action.card);
+                peer = new registration.peerType(peer, this, registration, action.card);
 
                 let parentPeer = this.findActionPeer(action);
 
@@ -394,11 +481,11 @@ export class CardDesignerSurface {
         this.updateLayout();
     }
 
-    private get draggedPeer(): DesignerPeers.DesignerPeer {
-        return this._draggedPeer;
+    private get card(): Adaptive.AdaptiveCard {
+        return this._card;
     }
 
-    private set draggedPeer(value: DesignerPeers.DesignerPeer) {
+    private setDraggedPeer(value: DesignerPeers.DesignerPeer) {
         if (this._draggedPeer != value) {
             if (this._draggedPeer) {
                 this._draggedPeer.dragging = false;
@@ -412,10 +499,8 @@ export class CardDesignerSurface {
         }
     }
 
-    readonly parentElement: HTMLElement;
-
-    constructor(parentElement: HTMLElement) {
-        this.parentElement = parentElement;
+    constructor(readonly context: DesignContext) {
+        this._serializationContext = this.context.hostContainer.createSerializationContext(this.context.targetVersion);
 
         var rootElement = document.createElement("div");
         rootElement.style.position = "relative";
@@ -436,15 +521,22 @@ export class CardDesignerSurface {
         this._designerSurface.style.width = "100%";
         this._designerSurface.style.height = "100%";
 
-        this._designerSurface.onkeydown = (e: KeyboardEvent) => {
+        this._designerSurface.onkeyup = (e: KeyboardEvent) => {
             if (this._selectedPeer) {
                 switch (e.keyCode) {
                     case Controls.KEY_ESCAPE:
-                        this.setSelectedPeer(this._selectedPeer.parent);
+                        if (this.draggedPeer) {
+                            this.endDrag(true);
+                        }
+                        else {
+                            this.setSelectedPeer(this._selectedPeer.parent);
+                        }
 
                         break;
                     case Controls.KEY_DELETE:
-                        this.removeSelected();
+                        if (!this.draggedPeer) {
+                            this.removeSelected();
+                        }
 
                         break;
                 }
@@ -456,22 +548,86 @@ export class CardDesignerSurface {
         this._designerSurface.onpointermove = (e: PointerEvent) => {
             let clientRect = this._designerSurface.getBoundingClientRect();
 
-            this.tryDrop({ x: e.x - clientRect.left, y: e.y - clientRect.top }, this.draggedPeer);
+            if (this.draggedPeer) {
+                if (!this._designerSurface.hasPointerCapture(e.pointerId)) {
+                    this._designerSurface.setPointerCapture(e.pointerId);
+                }
+
+                if (!this._dragVisual) {
+                    this._dragVisual = document.createElement("div");
+                    this._dragVisual.style.pointerEvents = "none";
+                    this._dragVisual.style.backgroundColor = "white";
+                    this._dragVisual.style.padding = "6px";
+                    this._dragVisual.style.opacity = "0.6";
+                    this._dragVisual.style.boxShadow = "0 0 15px -5px rgba(0, 0, 0, 0.4)";
+                    this._dragVisual.style.position = "absolute";
+                    this._dragVisual.style.boxSizing = "content-box";
+
+                    this._dragVisual.appendChild(this.draggedPeer.getCardObject().renderedElement.cloneNode(true));
+
+                    document.body.appendChild(this._dragVisual);
+                }
+
+                this._dragVisual.style.left = (e.x - 6) + "px";
+                this._dragVisual.style.top = (e.y - 6) + "px";
+
+                let renderedCardObjectRect = this.draggedPeer.getCardObject().renderedElement.getBoundingClientRect();
+
+                this._dragVisual.style.width = renderedCardObjectRect.width + "px";
+                this._dragVisual.style.height = renderedCardObjectRect.height + "px";
+
+                this.tryDrop({ x: e.x - clientRect.left, y: e.y - clientRect.top }, this.draggedPeer);
+            }
         }
 
         this._designerSurface.onpointerup = (e: PointerEvent) => {
+            this._designerSurface.releasePointerCapture(e.pointerId);
+
             if (this.draggedPeer) {
-                this.endDrag();
+                this.endDrag(false);
             }
         }
 
         rootElement.appendChild(this._designerSurface);
 
-        this.parentElement.innerHTML = "";
-        this.parentElement.appendChild(rootElement);
+        this.context.hostContainer.cardHost.innerHTML = "";
+        this.context.hostContainer.cardHost.appendChild(rootElement);
+
+        this._card = new Adaptive.AdaptiveCard();
+        this._card.onInlineCardExpanded = (action: Adaptive.ShowCardAction, isExpanded: boolean) => { this.inlineCardExpanded(action, isExpanded); };
+        this._card.onPreProcessPropertyValue = (sender: Adaptive.CardObject, property: Adaptive.PropertyDefinition, value: any) => {
+            if (Shared.GlobalSettings.enableDataBindingSupport && typeof value === "string" && this.context.sampleData && this.context.bindingPreviewMode !== BindingPreviewMode.NoPreview) {
+                let expression = ACData.Template.parseInterpolatedString(value);
+
+                if (typeof expression === "string") {
+                    return expression;
+                }
+                else {
+                    let evaluationContext: ACData.IEvaluationContext;
+
+                    if (this.context.bindingPreviewMode === BindingPreviewMode.SampleData) {
+                        evaluationContext = { $root: this.context.sampleData };
+                    }
+                    else {
+                        evaluationContext = { $root: this.context.dataStructure.dataType.generateSampleData() };
+                    }
+
+                    let evaluationResult = ACData.Template.tryEvaluateExpression(expression, evaluationContext, true);
+
+                    return typeof evaluationResult.value === "string" ? evaluationResult.value : value;
+                }
+            }
+
+            return value;
+        };
+        this._card.version = this.context.targetVersion;
+        this._card.hostConfig = this.context.hostContainer.getHostConfig();
+        this._card.designMode = true;
+
+        this.render();
     }
 
-    onCardValidated: (parseErrors: Array<Adaptive.IValidationError>, validationResults: Adaptive.ValidationResults) => void;
+    onCardValidated: (logEntries: Adaptive.IValidationEvent[]) => void;
     onSelectedPeerChanged: (peer: DesignerPeers.DesignerPeer) => void;
     onLayoutUpdated: (isFullRefresh: boolean) => void;
 
@@ -523,14 +679,12 @@ export class CardDesignerSurface {
 
         this.renderCard();
 
-        if (this.card) {
-            this._rootPeer = CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(this, null, this.card);
+        this._rootPeer = CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(this, null, this.card);
 
-            this.addPeer(this._rootPeer);
-        }
+        this.addPeer(this._rootPeer);
 
         this._removeCommandElement = document.createElement("div");
-        this._removeCommandElement.classList.add("acd-peerButton", "acd-icon-remove");
+        this._removeCommandElement.classList.add("acd-peerButton", "acd-peerButton-icon", "fixedWidth", "circular", "acd-icon-remove");
         this._removeCommandElement.title = "Remove";
         this._removeCommandElement.style.visibility = "hidden";
         this._removeCommandElement.style.position = "absolute";
@@ -550,7 +704,9 @@ export class CardDesignerSurface {
         this._peerCommandsHostElement.style.visibility = "hidden";
         this._peerCommandsHostElement.style.position = "absolute";
         this._peerCommandsHostElement.style.display = "flex";
+        this._peerCommandsHostElement.style.justifyContent = "flex-end";
         this._peerCommandsHostElement.style.zIndex = "500";
+        this._peerCommandsHostElement.style.pointerEvents = "none";
 
         this._designerSurface.appendChild(this._dragHandle.renderedElement);
         this._designerSurface.appendChild(this._removeCommandElement);
@@ -559,10 +715,14 @@ export class CardDesignerSurface {
         this.updateLayout();
     }
 
-    setCardPayloadAsObject(payload: object) {
-        this._lastParseErrors = [];
+    getCardPayloadAsObject(): object {
+        return this.card.toJSON(this._serializationContext);
+    }
 
-        this.card.parse(payload, this._lastParseErrors);
+    setCardPayloadAsObject(payload: object) {
+        this._serializationContext.clearEvents();
+
+        this.card.parse(payload, this._serializationContext);
 
         this.render();
     }
@@ -572,14 +732,16 @@ export class CardDesignerSurface {
     }
 
     updateLayout(isFullRefresh: boolean = true) {
-        for (var i = 0; i < this._allPeers.length; i++) {
-            this._allPeers[i].updateLayout();
-        }
+        if (!this.isPreviewMode) {
+            for (var i = 0; i < this._allPeers.length; i++) {
+                this._allPeers[i].updateLayout();
+            }
 
-        this.updatePeerCommandsLayout();
+            this.updatePeerCommandsLayout();
 
-        if (this.onLayoutUpdated) {
-            this.onLayoutUpdated(isFullRefresh);
+            if (this.onLayoutUpdated) {
+                this.onLayoutUpdated(isFullRefresh);
+            }
         }
     }
 
@@ -600,17 +762,23 @@ export class CardDesignerSurface {
         }
     }
 
+    onStartDrag: (sender: CardDesignerSurface) => void;
+    onEndDrag: (sender: CardDesignerSurface, wasCancelled: boolean) => void;
+
     startDrag(peer: DesignerPeers.DesignerPeer) {
         if (!this.draggedPeer) {
             this._designerSurface.classList.add("dragging");
 
-            this.draggedPeer = peer;
-
+            this.setDraggedPeer(peer);
             this.setSelectedPeer(this.draggedPeer);
+
+            if (this.onStartDrag) {
+                this.onStartDrag(this);
+            }
         }
     }
 
-    endDrag() {
+    endDrag(wasCancelled: boolean) {
         if (this.draggedPeer) {
             // Ensure that the dragged peer's elements are at the top in Z order
             this.draggedPeer.removeElementsFromDesignerSurface(true);
@@ -618,7 +786,14 @@ export class CardDesignerSurface {
 
             this._dropTarget.renderedElement.classList.remove("dragover");
 
-            this.draggedPeer = null;
+            this._dragVisual.remove();
+            this._dragVisual = undefined;
+
+            this.setDraggedPeer(null);
+
+            if (this.onEndDrag) {
+                this.onEndDrag(this, wasCancelled);
+            }
 
             this._designerSurface.classList.remove("dragging");
         }
@@ -668,23 +843,35 @@ export class CardDesignerSurface {
         return this._selectedPeer;
     }
 
-    get card(): Adaptive.AdaptiveCard {
-        return this._card;
+    get draggedPeer(): DesignerPeers.DesignerPeer {
+        return this._draggedPeer;
     }
 
-    set card(value: Adaptive.AdaptiveCard) {
-        if (value != this._card) {
-            if (this._card) {
-                this._card.onInlineCardExpanded = null;
+    get isPreviewMode(): boolean {
+        return this._isPreviewMode;
+    }
+
+    set isPreviewMode(value: boolean) {
+        if (this._isPreviewMode != value) {
+            this._isPreviewMode = value;
+
+            if (this._isPreviewMode) {
+                this._designerSurface.classList.add("acd-hidden");
+                this._dragHandle.renderedElement.classList.add("acd-hidden");
+                this._removeCommandElement.classList.add("acd-hidden");
+                this._peerCommandsHostElement.classList.add("acd-hidden");
+            }
+            else {
+                this._designerSurface.classList.remove("acd-hidden");
+                this._dragHandle.renderedElement.classList.remove("acd-hidden");
+                this._removeCommandElement.classList.remove("acd-hidden");
+                this._peerCommandsHostElement.classList.remove("acd-hidden");
             }
 
-            this._card = value;
+            this.card.designMode = !this._isPreviewMode;
 
-            if (this._card) {
-                this._card.onInlineCardExpanded = (action: Adaptive.ShowCardAction, isExpanded: boolean) => { this.inlineCardExpanded(action, isExpanded); };
-            }
-
-            this.render();
+            this.renderCard();
+            this.updateLayout(false);
         }
     }
 }

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-using AdaptiveCards.Rendering.Uwp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 using UWPTestLibrary;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
-using Windows.Data.Json;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -115,7 +113,7 @@ namespace UWPUnitTests
 
         async public Task TestCard(FileViewModel hostConfigFile, FileViewModel cardFile)
         {
-            var renderResult = await UWPTestLibrary.RenderTestHelpers.RenderCard(cardFile, hostConfigFile, new Dictionary<string, AdaptiveCards.Rendering.Uwp.IAdaptiveCardResourceResolver>());
+            var renderResult = await UWPTestLibrary.RenderTestHelpers.RenderCard(cardFile, hostConfigFile);
 
             if (renderResult.Tree != null)
             {
@@ -127,7 +125,11 @@ namespace UWPUnitTests
                 Border border = new Border();
                 border.Width = renderResult.CardWidth;
                 border.Child = stackPanel;
-                (Window.Current.Content as Frame).Content = border;
+
+                ScrollViewer scrollViewer = new ScrollViewer();
+                scrollViewer.Content = border;
+
+                (Window.Current.Content as Frame).Content = scrollViewer;
 
                 await imageWaiter.WaitOnAllImagesAsync();
 
@@ -145,7 +147,7 @@ namespace UWPUnitTests
 
             await Task.Delay(10);
 
-            var result = await TestResultViewModel.CreateAsync(
+            TestResultViewModel result = await TestResultViewModel.CreateAsync(
                 cardFile: cardFile,
                 hostConfigFile: hostConfigFile,
                 renderedTestResult: renderResult,
@@ -155,8 +157,15 @@ namespace UWPUnitTests
                 sourceHostConfigsFolder: _sourceHostConfigsFolder,
                 sourceCardsFolder: _sourceCardsFolder);
 
-            if ((result.Status != TestStatus.Passed) &&
-                (result.Status != TestStatus.PassedButSourceWasChanged))
+            // For the unit test, only check that the renderer succeeded (or not) as expected, and that the round tripped json is unchanged.
+            // Image comparison for the time being is not quite stable enough to run as a unit test.
+            // Allow new cards to pass as long as they don't have an error
+            bool testPass =
+                result.Status.MatchedViaError ||
+                result.Status.JsonRoundTripMatched ||
+                (result.Status.NewCard && (result.Status.Error == null));
+
+            if (!testPass)
             {
                 throw new Exception(result.Status.ToString() + ": " + result.HostConfigName + "\\" + result.CardName);
             }

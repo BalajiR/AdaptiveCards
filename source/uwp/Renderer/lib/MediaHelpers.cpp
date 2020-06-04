@@ -251,13 +251,13 @@ void GetMediaSource(_In_ IAdaptiveHostConfig* hostConfig,
         ComPtr<IAdaptiveMediaSource> currentSource;
         THROW_IF_FAILED(sourceIterator->get_Current(&currentSource));
 
-        HString mimeType;
-        THROW_IF_FAILED(currentSource->get_MimeType(mimeType.GetAddressOf()));
+        HString currentMimeType;
+        THROW_IF_FAILED(currentSource->get_MimeType(currentMimeType.GetAddressOf()));
 
         INT32 isSupported;
         for (UINT i = 0; i < ARRAYSIZE(supportedMimeTypes); i++)
         {
-            THROW_IF_FAILED(WindowsCompareStringOrdinal(mimeType.Get(), HStringReference(supportedMimeTypes[i]).Get(), &isSupported));
+            THROW_IF_FAILED(WindowsCompareStringOrdinal(currentMimeType.Get(), HStringReference(supportedMimeTypes[i]).Get(), &isSupported));
 
             if (isSupported == 0)
             {
@@ -346,7 +346,8 @@ HRESULT HandleMediaClick(_In_ IAdaptiveRenderContext* renderContext,
             ComPtr<IAsyncOperation<IRandomAccessStream*>> getResourceStreamOperation;
             RETURN_IF_FAILED(resourceResolver->GetResourceStreamAsync(args.Get(), &getResourceStreamOperation));
 
-            // Take a reference to the mime type string for the lambda
+            // Take a reference to the mime type string for the lambda (lifetime dictated by localMimeType in the below
+            // lambda)
             HSTRING lambdaMimeType;
             WindowsDuplicateString(mimeType, &lambdaMimeType);
 
@@ -382,8 +383,7 @@ HRESULT HandleMediaClick(_In_ IAdaptiveRenderContext* renderContext,
 
                                               RETURN_IF_FAILED(localMediaElement->Play());
                                               return S_OK;
-                                          })
-                                              .Get(),
+                                          }).Get(),
                                           &mediaOpenedToken));
     }
     else

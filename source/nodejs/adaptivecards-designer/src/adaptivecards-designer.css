@@ -1,29 +1,29 @@
-/* * {
-    box-sizing: border-box;
-}
-
-html {
-    overflow: hidden !important;
-}
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 14px;
-    font-weight: normal;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-} */
-
-/*
-    Miscellaneous
-*/
-
 @font-face {
     font-family: 'FabricMDL2Icons';
     src: url("https://appsforoffice.microsoft.com/fabric/fonts/icons/FabricMDL2Icons.woff") format("woff"), url("https://appsforoffice.microsoft.com/fabric/fonts/icons/FabricMDL2Icons.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
+}
+
+.acd-designer-root *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.acd-designer-root *::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.acd-designer-root *:hover::-webkit-scrollbar-thumb {
+    background-color: #CDCDCD;
+}
+
+.acd-designer-cardArea {
+    flex: 1 1 70%;
+    background-color: #F6F6F6;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .acd-designersurface {
@@ -34,12 +34,20 @@ body {
     display: none !important;
 }
 
+.acd-toolPalette-pane {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    background-color: white;
+    border-right: 1px solid #D2D2D2;
+}
+
 .acd-treeView-pane {
     display: flex;
     flex: 0 0 auto;
     flex-direction: column;
     width: 360px;
-    height: 100%;
+    background-color: white;
 }
 
 .acd-treeView-host {
@@ -55,7 +63,6 @@ body {
     flex: 0 0 auto;
     flex-direction: column;
     width: 360px;
-    height: 100%;
     background-color: #F9F9F9;
 }
 
@@ -65,19 +72,25 @@ body {
 }
 
 .acd-vertical-splitter {
-    flex: 0 0 6px;
-    background-color: #EEEEEE;
     border-left: 1px solid #D2D2D2;
-    border-right: 1px solid #D2D2D2;
     cursor: ew-resize;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    z-index: 1;
 }
 
 .acd-horizontal-splitter {
-    flex: 0 0 6px;
-    background-color: #EEEEEE;
     border-top: 1px solid #D2D2D2;
-    border-bottom: 1px solid #D2D2D2;
     cursor: ns-resize;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    z-index: 1;
 }
 
 .acd-json-editor-pane {
@@ -121,11 +134,10 @@ body {
 */
 
 .acd-inplace-editor-host {
-    box-sizing: content-box;
+    box-sizing: border-box;
     position: absolute;
     display: flex;
-    margin: -1px;
-    border: 1px dashed red;
+    outline: 1px dashed steelblue;
     background-color: white;
 }
 
@@ -143,6 +155,107 @@ body {
     color: black !important;
 }
 
+.acd-dialog-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.acd-dialog-frame {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 50px -5px rgba(0, 0, 0, 0.4);
+    padding: 20px;
+}
+
+.acd-dialog-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.acd-dialog-message {
+    margin-top: 10px;
+}
+
+.acd-dialog-buttonBar {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.acd-dialog-button {
+}
+
+.acd-open-sample-item-container {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-end;
+    justify-content: space-evenly;
+}
+
+.acd-open-sample-item {
+    width: 350px;
+    height: 100%;
+    padding: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.acd-open-sample-item-thumbnail {
+    overflow: hidden;
+    height: 100%;
+    min-height: 150px;
+    max-height: 400px;
+    width: 100%;
+    pointer-events: none;
+    border: 1.5px solid #EEEEEE;
+    display: flex;
+    justify-content: center;
+}
+
+.acd-open-sample-item-title {
+    margin-top: 10px;
+}
+
+.acd-open-sample-item:hover > .acd-open-sample-item-thumbnail {
+    box-shadow: 0 0 20px -5px #CCCCCC;
+    border: 1.5px solid #CCCCCC;
+}
+
+.acd-open-sample-item:hover > .acd-open-sample-item-title {
+    font-weight: bold;
+}
+
+@keyframes acd-spinner-rotate {
+    from { transform: rotate(0) }
+    to { transform: rotate(360deg) }
+}
+
+.acd-spinner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border-width: 1.5px;
+    border-style: solid;
+    border-color: rgb(0, 120, 212) rgb(199, 224, 244) rgb(199, 224, 244) rgb(199, 224, 244);
+    animation-name: acd-spinner-rotate;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
 /*
     Icons
 */
@@ -152,6 +265,27 @@ body {
     font-size: 14px;
     font-style: normal;
     font-weight: normal;
+}
+
+.acd-dialog-titleBar-button {
+    color: black;
+    background-color: transparent;
+    font-size: 16px;
+    padding: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.acd-dialog-titleBar-button:hover {
+    background-color: #CCCCCC;
+}
+
+.acd-toolPalette-icon {
+    color: #3a96dd;
+}
+
+.acd-treeView-icon {
+    color: #3a96dd;
 }
 
 .acd-icon-bolt::before {
@@ -306,70 +440,111 @@ body {
     content: "\EB1C";
 }
 
+.acd-icon-dot::before {
+    content: "\E915";
+}
+
+.acd-icon-dataStructure::before {
+    content: "\EC8D";
+}
+
+.acd-icon-preview::before {
+    content: "\E8A1";
+}
+
+.acd-icon-open::before {
+    content: "\ED25";
+}
+
+.acd-icon-customPaletteItem::before {
+    content: "\ECAA";
+}
+
 /*
     Side panes
 */
 
 .acd-verticalCollapsedTabContainer {
-    max-width: 32px;
-    overflow-x: hidden;
 }
 
-.acd-sidePane-header {
-    height: 32px;
-    background-color: #EEEEEE;
-    cursor: default;
-}
-
-.acd-sidePane-header.rotated90DegreesClockwise {
-    width: 32px;
-    height: 170px;
-    border-bottom: 1px solid #D2D2D2;
-}
-
-.acd-sidePane-header.rotated90DegreesCounterClockwise {
-    width: 32px;
-    height: 170px;
-    border-bottom: 1px solid #D2D2D2;
-}
-
-.acd-sidePane-header-content {
-    height: 100%;
-    padding: 4px 10px;
+.acd-horizontalCollapsedTabContainer {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex: 0 0 auto;
 }
 
-.acd-sidePane-header-content.rotated90DegreesClockwise {
-    width: 170px;
-    height: 32px;
-    transform-origin: 0 100%;
-    transform: rotate(90deg) translate(-32px, 0px);
+.acd-horizontalCollapsedTabContainer > .acd-toolbox-header {
+    border-right: 1px solid #D2D2D2;
 }
 
-.acd-sidePane-header-content.rotated90DegreesCounterClockwise {
+.acd-verticalCollapsedTabContainer.acd-dockedLeft > .acd-toolbox-header {
+    width: 32px;
+    height: 170px;
+    border-bottom: 1px solid #D2D2D2;
+}
+
+.acd-verticalCollapsedTabContainer.acd-dockedLeft .acd-toolbox-header-content {
     width: 170px;
     height: 32px;
     transform-origin: 0 0;
     transform: rotate(-90deg) translate(-170px, 0px);
 }
 
-.acd-sidePane-header-title {
+
+.acd-verticalCollapsedTabContainer.acd-dockedRight > .acd-toolbox-header {
+    width: 32px;
+    height: 170px;
+    border-bottom: 1px solid #D2D2D2;
+}
+
+.acd-verticalCollapsedTabContainer.acd-dockedRight .acd-toolbox-header-content {
+    width: 170px;
+    height: 32px;
+    transform-origin: 0 100%;
+    transform: rotate(90deg) translate(-32px, 0px);
+}
+
+.acd-toolbox-header {
+    height: 32px;
+    cursor: default;
+    flex: 0 0 auto;
+}
+
+.acd-toolbox-header-content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.acd-toolbox-header-title {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: gray;
 }
 
-.acd-sidePane-header-expandCollapseButton {
+.acd-toolbox-header-commandButton {
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin-left: 4px;
+    height: 100%;
+    padding: 4px 8px;
+    color: gray;
 }
 
-.acd-sidePane-header-status {
-    margin-left: 4px;
+.acd-toolbox-header-commandButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.acd-toolbox-header-commandButton:active {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.acd-toolbox-header-commandsHost {
+    display: flex;
+    height: 100%;
 }
 
 .acd-designersurface.dragging {
@@ -385,8 +560,23 @@ body {
     Designer peers
 */
 
+@keyframes acd-peer-frame-appear {
+    from { border-color: transparent }
+    to { border-color: steelblue }
+}
+
+@keyframes acd-peer-frame-disappear {
+    /*
+    from { border-color: currentColor }
+    */
+    to { border-color: transparent }
+}
+
 .acd-peer {
-    border: 1px solid transparent;
+    animation-name: acd-peer-frame-disappear;
+    animation-duration: 150ms;
+    animation-fill-mode: forwards;
+    border: 1px dashed transparent;
 }
 
 .acd-peer.invisible {
@@ -396,12 +586,12 @@ body {
     opacity: 0.4;
 }
 
-.acd-peer:hover {
-    border: 1px solid blue;
-}
-
-.acd-peer.selected {
-    border: solid 1px red;
+.acd-peer:hover,
+.acd-peer.selected,
+.acd-peer.dragging {
+    animation-name: acd-peer-frame-appear;
+    animation-duration: 200ms;
+    animation-fill-mode: forwards;
 }
 
 .acd-peer.dragover {
@@ -412,30 +602,48 @@ body {
     background-color: none;
 }
 
-.acd-peer.dragging:hover {
-    border: 1px solid green;
-}
-
 .acd-peerButton {
-    width: 20px;
-    height: 20px;
-    font-family: 'FabricMDL2Icons';
     font-size: 14px;
-    font-weight: bold;
-    font-style: normal;
-    font-weight: normal;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid red;
-    color: red;
+    border: 1px solid steelblue;
+    color: steelblue;
     background-color: white;
     cursor: default;
     user-select: none;
+    padding: 1px;
+    display: flex;
+    align-items: center;
+    pointer-events: all !important;
+    height: 20px;
+    border-radius: 0;
+    outline: none;
+}
+
+.acd-peerButton.fixedWidth {
+    width: 20px;
+}
+
+.acd-peerButton.fixedWidth.circular {
+    border-radius: 50%;
+}
+
+.acd-peerButton.variableWidth {
+}
+
+.acd-peerButton-icon {
+    font-family: 'FabricMDL2Icons';
+    font-style: normal;
+    font-weight: normal;
+    justify-content: center;
+}
+
+.acd-peerButton-text {
+    font-family: inherit;
+    justify-content: center;
+    padding: 0px 4px;
 }
 
 .acd-peerButton:hover {
-    background-color: red;
+    background-color: steelblue;
     color: white;
 }
 
@@ -445,31 +653,24 @@ body {
 
 .acd-palette-category {
     align-items: center;
-    color: #4a4a4a;
     display: flex;
     font-size: 14px;
     font-weight: 600;
     list-style-type: none;
     position: relative;
     white-space: nowrap;
-    padding: 4px 16px 4px 16px;
+    padding: 6px 16px 6px 16px;
     cursor: default;
-}
-
-.acd-palette-category::after {
-    border-bottom: 1px solid #e0e0e0;
-    content: "";
-    margin-bottom: -3px;
-    margin-left: 8px;
-    width: 100%;
+    background-color: #EEEEEE;
 }
 
 .acd-palette-item {
     cursor: move;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 4px 16px 4px 16px;
+    padding: 6px 16px 6px 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .acd-palette-item-label {
@@ -521,7 +722,12 @@ body {
 }
 
 .acd-tree-item-additionalText {
-    color: gray;
+    color: #757575;
+    margin-left: 8px;
+}
+
+.acd-data-tree-item-additionalText {
+    color: #3a96dd;
     margin-left: 8px;
 }
 
@@ -583,6 +789,10 @@ body {
     background-color: transparent;
 }
 
+.acd-toolbar-button.acd-toolbar-button-toggled {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .acd-toolbar-button-iconOnly::before {
     margin-right: 0 !important;
 }
@@ -592,6 +802,16 @@ body {
     font-size: 20px;
     margin-right: 8px;
 }
+
+.acd-fieldPicker-host {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/*
+    Adaptive Card renderer styles for Property Sheet and other
+    designer AC-based parts of designer UI.
+*/
 
 .default-ac-image.default-ac-selectable {
     cursor: pointer;
@@ -659,7 +879,7 @@ a.default-ac-anchor:visited:active {
     background-color: rgba(0, 0, 0, 0.15) !important;
 }
 
-.default-ac-pushButton {
+.default-ac-pushButton, .acd-dialog-button {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
@@ -674,21 +894,20 @@ a.default-ac-anchor:visited:active {
         -ms-user-select: none;
             user-select: none;
     height: 31px;
-    background-color: white;
-    color: #0078D7;
-    border: 1px solid #B2E0FF;
+    background-color: #EEEEEE;
+    color: black;
+    border: 1px solid #CCCCCC;
+    border-radius: 2px;
 }
 
-.default-ac-pushButton:hover {
-    background-color: #0078D7;
-    color: white;
-    border: 1px solid #73C1FD;
+.default-ac-pushButton:hover, .acd-dialog-button:hover {
+    background-color: #DDDDDD;
+    border: 1px solid #BBBBBB;
 }
 
-.default-ac-pushButton:active {
-    background-color: #464B93;
-    color: white;
-    border: 1px solid #464B93;
+.default-ac-pushButton:active, .acd-dialog-button:active {
+    background-color: #CCCCCC;
+    border: 1px solid #BBBBBB;
 }
 
 .default-ac-pushButton.subdued {
