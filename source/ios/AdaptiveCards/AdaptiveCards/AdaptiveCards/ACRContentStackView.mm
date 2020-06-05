@@ -297,32 +297,6 @@ static int kToggleVisibilityContext;
     return [_stackView.subviews count];
 }
 
-- (void)removeLastViewFromArrangedSubview
-{
-    if ([self subviewsCounts]) {
-        UIView *view = [self getLastSubview];
-        if (view) {
-            [self.stackView removeArrangedSubview:view];
-            [view removeFromSuperview];
-        }
-    }
-}
-
-- (UIView *)getLastSubview
-{
-    UIView *view = nil;
-    const NSUInteger subviewsCounts = [self subviewsCounts];
-    if (subviewsCounts) {
-        view = self.stackView.subviews[subviewsCounts - 1];
-    }
-    return view;
-}
-
-- (NSUInteger)subviewsCounts
-{
-    return [self.stackView.subviews count];
-}
-
 - (void)addTarget:(NSObject *)target
 {
     [_targets addObject:target];

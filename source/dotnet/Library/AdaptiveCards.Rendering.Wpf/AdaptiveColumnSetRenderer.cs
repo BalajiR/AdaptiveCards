@@ -87,10 +87,9 @@ namespace AdaptiveCards.Rendering.Wpf
 
                         tag = new TagContent(uiSep, uiColumnSet);
 
-                    uiSep.Width = context.Config.Separator.LineThickness;
-                    if (column.Separator && context.Config.Separator.LineColor != null)
-                    {
-                        uiSep.Background = context.GetColorBrush(context.Config.Separator.LineColor);
+                        uiColumnSet.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                        Grid.SetColumn(uiSep, uiColumnSet.ColumnDefinitions.Count - 1);
+                        uiColumnSet.Children.Add(uiSep);
                     }
                     else
                     {
