@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-import * as DesignerSurface from "./card-designer-surface";
-import * as DesignerPeers from "./designer-peers";
 import * as Adaptive from "adaptivecards";
 import { DraggableElement } from "./draggable-element";
+import { FieldDefinition } from "./data";
+import { DesignContext, CardDesignerSurface } from "./card-designer-surface";
+import { CardElementPeer, DesignerPeerRegistrationBase } from "./designer-peers";
 
 export abstract class BasePaletteItem extends DraggableElement {
     protected abstract getText(): string;
@@ -15,7 +16,7 @@ export abstract class BasePaletteItem extends DraggableElement {
         element.style.display = "flex";
 
         let iconElement = document.createElement("div");
-        iconElement.classList.add("acd-icon", this.getIconClass());
+        iconElement.classList.add("acd-icon", "acd-toolPalette-icon", this.getIconClass());
         iconElement.style.flex = "0 0 auto";
 
         let labelElement = document.createElement("div");
@@ -29,11 +30,11 @@ export abstract class BasePaletteItem extends DraggableElement {
         return element;
     }
 
-    cloneElement(): HTMLElement {
+    renderDragVisual(): HTMLElement {
         return this.internalRender();
     }
 
-    abstract createPeer(designer: DesignerSurface.CardDesignerSurface): DesignerPeers.CardElementPeer;
+    abstract createPeer(context: DesignContext, designer: CardDesignerSurface): CardElementPeer;
 }
 
 export class ElementPaletteItem extends BasePaletteItem {
@@ -46,53 +47,96 @@ export class ElementPaletteItem extends BasePaletteItem {
     }
 
     readonly typeRegistration: Adaptive.ITypeRegistration<Adaptive.CardElement>;
-    readonly peerRegistration: DesignerPeers.DesignerPeerRegistrationBase;
+    readonly peerRegistration: DesignerPeerRegistrationBase;
 
-    constructor(typeRegistration: Adaptive.ITypeRegistration<Adaptive.CardElement>, peerRegistration: DesignerPeers.DesignerPeerRegistrationBase) {
+    constructor(typeRegistration: Adaptive.ITypeRegistration<Adaptive.CardElement>, peerRegistration: DesignerPeerRegistrationBase) {
         super();
 
         this.typeRegistration = typeRegistration;
         this.peerRegistration = peerRegistration;
     }
 
-    createPeer(designer: DesignerSurface.CardDesignerSurface): DesignerPeers.CardElementPeer {
-        let peer = DesignerSurface.CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(designer, null, this.typeRegistration.createInstance());
+    createPeer(context: DesignContext, designer: CardDesignerSurface): CardElementPeer {
+        let peer = CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(designer, null, new this.typeRegistration.objectType());
         peer.initializeCardElement();
 
         return peer;
     }
 }
 
-/* DO NOT REMOVE - future feature
-class SnippetPaletteItem extends BasePaletteItem {
+export class DataPaletteItem extends BasePaletteItem {
     protected getText(): string {
-        return this.name;
+        return this.field.name;
     }
 
     protected getIconClass(): string {
         return null;
     }
 
+    constructor(readonly field: FieldDefinition) {
+        super();
+    }
+
+    createPeer(context: DesignContext, designer: CardDesignerSurface): CardElementPeer {
+        let element: Adaptive.CardElement;
+
+        if (this.field.isCollection) {
+            element = new Adaptive.Container();
+            element.setCustomProperty("$data", "{" + this.field.getPath() + "}");
+        }
+        else {
+            let textBlock = new Adaptive.TextBlock();
+            textBlock.text = "{" + this.field.getPath() + "}";
+
+            element = textBlock;
+        }
+
+        let peer = CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(designer, null, element);
+        peer.initializeCardElement();
+
+        return peer;
+    }
+}
+
+export abstract class CustomPaletteItem extends BasePaletteItem {
+    readonly category: string;
+
+    protected getIconClass(): string {
+        return "acd-icon-customPaletteItem";
+    }
+
+    constructor(category: string) {
+        super();
+
+        this.category = category;
+    }
+}
+
+export class SnippetPaletteItem extends CustomPaletteItem {
+    protected getText(): string {
+        return this.name;
+    }
+
     readonly name: string;
     snippet: object;
 
-    constructor(name: string) {
-        super();
+    constructor(category: string, name: string) {
+        super(category);
 
         this.name = name;
     }
 
-    createPeer(designer: Designer.CardDesigner): Designer.CardElementPeer {
+    createPeer(context: DesignContext, designer: CardDesignerSurface): CardElementPeer {
         if (this.snippet) {
             let rootElementTypeName = this.snippet["type"];
 
             if (rootElementTypeName) {
-                let adaptiveElement = Adaptive.AdaptiveCard.elementTypeRegistry.createInstance(rootElementTypeName);
+                let adaptiveElement = context.hostContainer.elementsRegistry.createInstance(rootElementTypeName, context.targetVersion);
 
                 if (adaptiveElement) {
                     adaptiveElement.parse(this.snippet);
 
-                    let peer = Designer.CardDesigner.cardElementPeerRegistry.createPeerInstance(designer, null, adaptiveElement);
+                    let peer = CardDesignerSurface.cardElementPeerRegistry.createPeerInstance(designer, null, adaptiveElement);
                     peer.initializeCardElement();
 
                     return peer;
@@ -101,4 +145,3 @@ class SnippetPaletteItem extends BasePaletteItem {
         }
     }
 }
-*/

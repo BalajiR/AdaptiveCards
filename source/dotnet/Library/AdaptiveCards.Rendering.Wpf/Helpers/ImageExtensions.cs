@@ -103,13 +103,9 @@ namespace AdaptiveCards.Rendering.Wpf
 
                     return Stretch.Fill;
                 }
-                else if (imageWidth >= parentWidth || imageSourceIsLargerThanExpectedRenderingSize(imageWidth, imageHeight, adaptiveImage.Size, adaptiveParameters.AdaptiveContext))
+                else 
                 {
                     return Stretch.Uniform;
-                }
-                else
-                {
-                    return Stretch.None;
                 }
             }
 

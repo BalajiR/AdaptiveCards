@@ -9,7 +9,8 @@ using namespace Microsoft::WRL::Wrappers;
 
 namespace AdaptiveNamespace
 {
-    HRESULT AdaptiveFontTypesDefinition::RuntimeClassInitialize() noexcept try
+    HRESULT AdaptiveFontTypesDefinition::RuntimeClassInitialize() noexcept
+    try
     {
         FontTypesDefinition stylesDefinition;
         return RuntimeClassInitialize(stylesDefinition);
