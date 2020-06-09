@@ -879,8 +879,7 @@ export class TextBlock extends BaseTextBlock {
                 }
             }
 
-            if (!this._processedText) {
-                this._treatAsPlainText = true;
+        targetElement.style.color = <string>Utils.stringToCssColor(this.isSubtle ? colorDefinition.subtle : colorDefinition.default);
 
                 let formattedText = TextFormatters.formatText(this.lang, preProcessedText);
 
@@ -1216,6 +1215,9 @@ export class RichTextBlock extends CardElement {
             this._inlines.push(inline);
         }
 
+        return result;
+    }
+
     protected internalParse(source: any, context: SerializationContext) {
         super.internalParse(source, context);
 
@@ -1398,6 +1400,7 @@ export class FactSet extends CardElement {
             element.style.display = "block";
             element.style.overflow = "hidden";
             element.classList.add(hostConfig.makeCssClassName("ac-factset"));
+            element.setAttribute("role", "presentation");
 
             for (let i = 0; i < this.facts.length; i++) {
                 let trElement = document.createElement("tr");
@@ -1754,7 +1757,6 @@ export abstract class CardElementContainer extends CardElement {
     protected isElementAllowed(element: CardElement) {
         return this.hostConfig.supportsInteractivity || !element.isInteractive;
     }
-}
 
     protected applyPadding() {
         super.applyPadding();
@@ -2439,9 +2441,6 @@ export abstract class Input extends CardElement implements IInput {
                 Enums.ValidationEvent.PropertyCantBeNull,
                 "All inputs must have a unique Id");
         }
-
-        return undefined;
-    }
 
     validateValue(): boolean {
         if (GlobalSettings.useBuiltInInputValidation) {
@@ -3839,6 +3838,17 @@ export class HttpHeader extends SerializableObject {
     constructor(name: string = "", value: string = "") {
         super();
 
+    @property(HttpHeader.nameProperty)
+    name: string;
+
+    @property(HttpHeader.valueProperty)
+    private _value: StringWithSubstitutions;
+
+    //#endregion
+
+    constructor(name: string = "", value: string = "") {
+        super();
+
         this.name = name;
         this.value = value;
     }
@@ -4768,6 +4778,14 @@ export abstract class StylableCardElementContainer extends CardElementContainer 
         this._bleed = value;
     }
 
+    protected getBleed(): boolean {
+        return this._bleed;
+    }
+
+    protected setBleed(value: boolean) {
+        this._bleed = value;
+    }
+
     protected get renderedActionCount(): number {
         return 0;
     }
@@ -4776,8 +4794,8 @@ export abstract class StylableCardElementContainer extends CardElementContainer 
         return this.getValue(StylableCardElementContainer.styleProperty) !== undefined;
     }
 
-    protected setBleed(value: boolean) {
-        this._bleed = value;
+    protected get allowCustomStyle(): boolean {
+        return true;
     }
 
     isBleeding(): boolean {

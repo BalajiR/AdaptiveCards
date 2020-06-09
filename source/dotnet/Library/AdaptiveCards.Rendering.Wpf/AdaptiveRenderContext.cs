@@ -498,5 +498,29 @@ namespace AdaptiveCards.Rendering.Wpf
                 card.Visibility = targetVisibility; 
             }
         }
+
+        public void ToggleShowCardVisibility(Button uiAction)
+        {
+            FrameworkElement card = ActionShowCards[uiAction];
+            var id = uiAction.GetContext() as AdaptiveInternalID;
+            if (id == null) 
+            {
+                Warnings.Add(new AdaptiveWarning(-1, $"Toggling visibility event handling is dropped " +
+                    $"since the action set the button belongs to has null internal id"));
+                return;
+            }
+            var peers = PeerShowCardsInActionSet[id];
+            if (card != null && peers != null)
+            {
+                var targetVisibility = card.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                // need to make sure we collapse all showcards before showing this one
+                foreach(var showCard in peers)
+                {
+                    showCard.Visibility = Visibility.Collapsed;
+                }
+
+                card.Visibility = targetVisibility; 
+            }
+        }
     }
 }

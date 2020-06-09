@@ -273,6 +273,9 @@ const CGFloat kAdaptiveCardsWidth = 330;
     ACOFeatureRegistration *featureReg = [ACOFeatureRegistration getInstance];
     [featureReg addFeature:@"acTest" featureVersion:@"1.0"];
 
+    ACOFeatureRegistration *featureReg = [ACOFeatureRegistration getInstance];
+    [featureReg addFeature:@"acTest" featureVersion:@"1.0"];
+
     [self update:self.ACVTabVC.userSelectedJSon];
 }
 

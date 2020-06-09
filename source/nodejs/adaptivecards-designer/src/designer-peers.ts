@@ -628,6 +628,21 @@ export class EnumPropertyEditor extends SingleInputPropertyEditor {
 
         return input;
     }
+}
+
+export class HeightPropertyEditor extends ChoicePropertyEditor {
+    protected setPropertyValue(context: PropertySheetContext, value: string) {
+        let processedValue: string;
+
+        switch (value) {
+            case "auto":
+            case "stretch":
+                processedValue = value;
+                break;
+            default:
+                processedValue = "auto";
+                break;
+        }
 
     constructor(
         readonly targetVersion: Adaptive.TargetVersion,
@@ -964,8 +979,10 @@ export abstract class DesignerPeer extends DraggableElement {
         this.treeItem = new DesignerPeerTreeItem(this);
     }
 
-    populatePropertySheet(propertySheet: PropertySheet, defaultCategory: string = PropertySheetCategory.DefaultCategory) {
-        // Do nothing in base implementation
+    changed(updatePropertySheet: boolean) {
+        if (this.onChanged) {
+            this.onChanged(this, updatePropertySheet);
+        }
     }
 
     changed(updatePropertySheet: boolean) {
