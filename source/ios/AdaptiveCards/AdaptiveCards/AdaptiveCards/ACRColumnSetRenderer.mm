@@ -84,6 +84,28 @@
                                                        constant:columnSetElem->GetMinHeight()]];
     }
 
+    if (columnSetElem->GetMinHeight() > 0) {
+        [constraints addObject:
+                         [NSLayoutConstraint constraintWithItem:columnSetView
+                                                      attribute:NSLayoutAttributeHeight
+                                                      relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                                         toItem:nil
+                                                      attribute:NSLayoutAttributeNotAnAttribute
+                                                     multiplier:1
+                                                       constant:columnSetElem->GetMinHeight()]];
+    }
+
+    if (columnSetElem->GetMinHeight() > 0) {
+        [constraints addObject:
+                         [NSLayoutConstraint constraintWithItem:columnSetView
+                                                      attribute:NSLayoutAttributeHeight
+                                                      relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                                         toItem:nil
+                                                      attribute:NSLayoutAttributeNotAnAttribute
+                                                     multiplier:1
+                                                       constant:columnSetElem->GetMinHeight()]];
+    }
+
     ACRColumnRenderer *castedRenderer = (ACRColumnRenderer *)columnRenderer;
     for (std::shared_ptr<Column> column : columns) {
         if (column->GetVerticalContentAlignment() != VerticalContentAlignment::Top) {

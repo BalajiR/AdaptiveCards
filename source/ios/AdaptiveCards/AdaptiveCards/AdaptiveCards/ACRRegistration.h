@@ -53,10 +53,3 @@
 - (void)removeFeature:(nullable NSString *)featureName;
 - (nonnull NSString *)getFeatureVersion:(nullable NSString *)featureName;
 @end
-
-@interface ACOFeatureRegistration:NSObject
-+ (ACOFeatureRegistration *)getInstance;
-- (void)addFeature:(nullable NSString *)featureName featureVersion:(nullable NSString *)version;
-- (void)removeFeature:(nullable NSString *)featureName;
-- (nonnull NSString *)getFeatureVersion:(nullable NSString *)featureName;
-@end

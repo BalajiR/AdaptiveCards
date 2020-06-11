@@ -49,6 +49,11 @@
         NSUInteger separatorTag = hashStringForSeparator.hash;
         UIView *separator = [_rootView viewWithTag:separatorTag];
 
+        NSMutableString *hashStringForSeparator = [NSMutableString stringWithCString:target->GetElementId().c_str() encoding:NSUTF8StringEncoding];
+        [hashStringForSeparator appendString:@"-separator"];
+        NSUInteger separatorTag = hashStringForSeparator.hash;
+        UIView *separator = [_rootView viewWithTag:separatorTag];
+
         AdaptiveCards::IsVisible toggleEnum = target->GetIsVisible();
         if (toggleEnum == AdaptiveCards::IsVisibleToggle) {
             BOOL isHidden = view.hidden;

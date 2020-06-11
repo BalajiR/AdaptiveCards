@@ -236,10 +236,6 @@ export abstract class CardElement extends CardObject {
         return this.internalRender();
     }
 
-    protected overrideInternalRender(): HTMLElement {
-        return this.internalRender();
-    }
-
     protected applyPadding() {
         if (this.separatorElement) {
             if (GlobalSettings.alwaysBleedSeparators && this.separatorOrientation == Enums.Orientation.Horizontal && !this.isBleeding()) {
@@ -296,28 +292,16 @@ export abstract class CardElement extends CardObject {
         return context.elementRegistry.findByName(this.getJsonTypeName()) !== undefined;
     }
 
-    protected getPadding(): Shared.PaddingDefinition {
+    protected getPadding(): PaddingDefinition | undefined {
         return this._padding;
     }
 
-    protected setPadding(value: Shared.PaddingDefinition) {
+    protected setPadding(value: PaddingDefinition | undefined) {
         this._padding = value;
     }
 
-    protected get supportsMinHeight(): boolean {
-        return false;
-    }
-
-    protected get useDefaultSizing(): boolean {
-        return true;
-    }
-
-    protected get allowCustomPadding(): boolean {
-        return true;
-    }
-
-    protected get separatorOrientation(): Enums.Orientation {
-        return Enums.Orientation.Horizontal;
+    protected shouldSerialize(context: SerializationContext): boolean {
+        return context.elementRegistry.findByName(this.getJsonTypeName()) !== undefined;
     }
 
     protected get defaultStyle(): string {
@@ -895,211 +879,13 @@ export class TextBlock extends BaseTextBlock {
                 }
             }
 
-        return result;
-    }
+        targetElement.style.color = <string>Utils.stringToCssColor(this.isSubtle ? colorDefinition.subtle : colorDefinition.default);
 
                 let formattedText = TextFormatters.formatText(this.lang, preProcessedText);
 
                 if (this.useMarkdown && formattedText) {
                     if (GlobalSettings.allowMarkForTextHighlighting) {
                         formattedText = formattedText.replace(/<mark>/g, "===").replace(/<\/mark>/g, "/==/");
-                    }
-
-        let fontSize: number;
-
-        switch (this.size) {
-            case Enums.TextSize.Small:
-                fontSize = fontType.fontSizes.small;
-                break;
-            case Enums.TextSize.Medium:
-                fontSize = fontType.fontSizes.medium;
-                break;
-            case Enums.TextSize.Large:
-                fontSize = fontType.fontSizes.large;
-                break;
-            case Enums.TextSize.ExtraLarge:
-                fontSize = fontType.fontSizes.extraLarge;
-                break;
-            default:
-                fontSize = fontType.fontSizes.default;
-                break;
-        }
-
-        targetElement.style.fontSize = fontSize + "px";
-
-        let colorDefinition = this.getColorDefinition(this.getEffectiveStyleDefinition().foregroundColors, this.effectiveColor);
-
-        targetElement.style.color = Utils.stringToCssColor(this.isSubtle ? colorDefinition.subtle : colorDefinition.default);
-
-        let fontWeight: number;
-
-        switch (this.weight) {
-            case Enums.TextWeight.Lighter:
-                fontWeight = fontType.fontWeights.lighter;
-                break;
-            case Enums.TextWeight.Bolder:
-                fontWeight = fontType.fontWeights.bolder;
-                break;
-            default:
-                fontWeight = fontType.fontWeights.default;
-                break;
-        }
-
-        targetElement.style.fontWeight = fontWeight.toString();
-    }
-
-    parse(json: any, errors?: Array<HostConfig.IValidationError>) {
-        super.parse(json, errors);
-
-        this.text = Utils.getStringValue(json["text"]);
-
-        let sizeString = Utils.getStringValue(json["size"]);
-
-        if (sizeString && sizeString.toLowerCase() === "normal") {
-            this.size = Enums.TextSize.Default;
-
-            raiseParseError(
-                {
-                    error: Enums.ValidationError.Deprecated,
-                    message: "The TextBlock.size value \"normal\" is deprecated and will be removed. Use \"default\" instead."
-                },
-                errors
-            );
-        }
-        else {
-            this.size = Utils.getEnumValue(Enums.TextSize, sizeString, this.size);
-        }
-
-        let weightString = Utils.getStringValue(json["weight"]);
-
-        if (weightString && weightString.toLowerCase() === "normal") {
-            this.weight = Enums.TextWeight.Default;
-
-            raiseParseError(
-                {
-                    error: Enums.ValidationError.Deprecated,
-                    message: "The TextBlock.weight value \"normal\" is deprecated and will be removed. Use \"default\" instead."
-                },
-                errors
-            );
-        }
-        else {
-            this.weight = Utils.getEnumValue(Enums.TextWeight, weightString, this.weight);
-        }
-
-        this.color = Utils.getEnumValue(Enums.TextColor, json["color"], this.color);
-        this.isSubtle = Utils.getBoolValue(json["isSubtle"], this.isSubtle);
-        this.fontType = Utils.getEnumValue(Enums.FontType, json["fontType"], this.fontType);
-    }
-
-    get effectiveColor(): Enums.TextColor {
-        return this.color ? this.color : Enums.TextColor.Default;
-    }
-
-    get text(): string {
-        return this._text;
-    }
-
-    set text(value: string) {
-        this.setText(value);
-    }
-
-    get selectAction(): Action {
-        return this._selectAction;
-    }
-
-    set selectAction(value: Action) {
-        this._selectAction = value;
-
-        if (this._selectAction) {
-            this._selectAction.setParent(this);
-        }
-    }
-}
-
-export class TextBlock extends BaseTextBlock {
-    private _computedLineHeight: number;
-    private _originalInnerHtml: string;
-    private _processedText: string = null;
-    private _treatAsPlainText: boolean = true;
-
-    private restoreOriginalContent() {
-        var maxHeight = this.maxLines
-            ? (this._computedLineHeight * this.maxLines) + 'px'
-            : null;
-
-        this.renderedElement.style.maxHeight = maxHeight;
-        this.renderedElement.innerHTML = this._originalInnerHtml;
-    }
-
-    private truncateIfSupported(maxHeight: number): boolean {
-        // For now, only truncate TextBlocks that contain just a single
-        // paragraph -- since the maxLines calculation doesn't take into
-        // account Markdown lists
-        var children = this.renderedElement.children;
-        var isTextOnly = !children.length;
-
-        var truncationSupported = isTextOnly || children.length == 1
-            && (<HTMLElement>children[0]).tagName.toLowerCase() == 'p';
-
-        if (truncationSupported) {
-            var element = isTextOnly
-                ? this.renderedElement
-                : <HTMLElement>children[0];
-
-            Utils.truncate(element, maxHeight, this._computedLineHeight);
-            return true;
-        }
-
-        return false;
-    }
-
-    protected setText(value: string) {
-        super.setText(value);
-
-        this._processedText = null;
-    }
-
-    protected getRenderedDomElementType(): string {
-        return "div";
-    }
-
-    protected internalRender(): HTMLElement {
-        this._processedText = null;
-
-        if (!Utils.isNullOrEmpty(this.text)) {
-            let hostConfig = this.hostConfig;
-
-            let element = document.createElement(this.getRenderedDomElementType());
-            element.classList.add(hostConfig.makeCssClassName("ac-textBlock"));
-            element.style.overflow = "hidden";
-
-            this.applyStylesTo(element);
-
-            if (this.selectAction) {
-                element.onclick = (e) => {
-                    e.preventDefault();
-                    e.cancelBubble = true;
-
-                    this.selectAction.execute();
-                }
-
-                if (hostConfig.supportsInteractivity) {
-                    element.tabIndex = 0
-                    element.setAttribute("role", "button");
-                    element.setAttribute("aria-label", this.selectAction.title);
-                    element.classList.add(hostConfig.makeCssClassName("ac-selectable"));
-                }
-            }
-
-            if (!this._processedText) {
-                this._treatAsPlainText = true;
-
-                let formattedText = TextFormatters.formatText(this.lang, this.text);
-
-                if (this.useMarkdown) {
-                    if (AdaptiveCard.allowMarkForTextHighlighting) {
-                        formattedText = formattedText.replace(/<mark>/g, "===").replace(/<\/mark>/g, "/==");
                     }
 
                     let markdownProcessingResult = AdaptiveCard.applyMarkdown(formattedText);
@@ -1428,6 +1214,8 @@ export class RichTextBlock extends CardElement {
 
             this._inlines.push(inline);
         }
+
+        return result;
     }
 
     protected internalParse(source: any, context: SerializationContext) {
@@ -1612,6 +1400,7 @@ export class FactSet extends CardElement {
             element.style.display = "block";
             element.style.overflow = "hidden";
             element.classList.add(hostConfig.makeCssClassName("ac-factset"));
+            element.setAttribute("role", "presentation");
 
             for (let i = 0; i < this.facts.length; i++) {
                 let trElement = document.createElement("tr");
@@ -2595,14 +2384,22 @@ export abstract class Input extends CardElement implements IInput {
         return undefined;
     }
 
-    protected valueChanged() {
-        this.resetValidationFailureCue();
+    static readonly validationProperty = new SerializableObjectProperty(
+        Versions.vNext,
+        "validation",
+        InputValidationOptions);
 
-        if (this.onValueChanged) {
-            this.onValueChanged(this);
+    protected populateSchema(schema: SerializableObjectSchema) {
+        super.populateSchema(schema);
+
+        if (!GlobalSettings.useBuiltInInputValidation) {
+            schema.remove(Input.validationProperty);
         }
+    }
 
-        raiseInputValueChangedEvent(this);
+    @property(Input.validationProperty)
+    get validation(): InputValidationOptions {
+        return this.getValue(Input.validationProperty);
     }
 
     protected resetValidationFailureCue() {
@@ -2623,13 +2420,15 @@ export abstract class Input extends CardElement implements IInput {
             this._errorMessageElement.className = this.hostConfig.makeCssClassName("ac-input-validation-error-message");
             this._errorMessageElement.textContent = this.validation.errorMessage;
 
-            this._outerContainerElement.appendChild(this._errorMessageElement);
-        }
+    protected get inputControlContainerElement(): HTMLElement {
+        return this._inputControlContainerElement;
     }
 
     abstract get value(): any;
 
-    onValueChanged: (sender: Input) => void;
+        this._outerContainerElement = document.createElement("div");
+        this._outerContainerElement.style.display = "flex";
+        this._outerContainerElement.style.flexDirection = "column";
 
     abstract isSet(): boolean;
 
@@ -2642,7 +2441,6 @@ export abstract class Input extends CardElement implements IInput {
                 Enums.ValidationEvent.PropertyCantBeNull,
                 "All inputs must have a unique Id");
         }
-    }
 
     validateValue(): boolean {
         if (GlobalSettings.useBuiltInInputValidation) {
@@ -2818,10 +2616,6 @@ export class TextInput extends Input {
 
         if (!result && this.inlineAction) {
             result = this.inlineAction.getActionById(id);
-        }
-
-        if (this._inlineAction) {
-            Utils.setProperty(result, "inlineAction", this._inlineAction.toJSON());
         }
 
         return result;
@@ -3474,38 +3268,6 @@ export class TimeInput extends Input {
         return "Input.Time";
     }
 
-    toJSON() {
-        let result = super.toJSON();
-
-        Utils.setProperty(result, "min", this.min);
-        Utils.setProperty(result, "max", this.max);
-
-        return result;
-    }
-
-    parse(json: any, errors?: Array<HostConfig.IValidationError>) {
-        super.parse(json, errors);
-
-        this.min = Utils.getStringValue(json["min"]);
-        this.max = Utils.getStringValue(json["max"]);
-    }
-
-    get min(): string {
-        return this._min;
-    }
-
-    set min(value: string) {
-        this._min = this.parseInputValue(value);
-    }
-
-    get max(): string {
-        return this._max;
-    }
-
-    set max(value: string) {
-        this._max = this.parseInputValue(value);
-    }
-
     isSet(): boolean {
         return this.value ? true : false;
     }
@@ -3946,10 +3708,6 @@ export class OpenUrlAction extends Action {
     getHref(): string | undefined {
         return this.url;
     }
-
-    getHref(): string {
-        return this.url;
-    }
 }
 
 export class ToggleVisibilityAction extends Action {
@@ -4067,6 +3825,18 @@ export class HttpHeader extends SerializableObject {
     protected getSchemaKey(): string {
         return "HttpHeader";
     }
+}
+
+    @property(HttpHeader.nameProperty)
+    name: string;
+
+    @property(HttpHeader.valueProperty)
+    private _value: StringWithSubstitutions;
+
+    //#endregion
+
+    constructor(name: string = "", value: string = "") {
+        super();
 
     @property(HttpHeader.nameProperty)
     name: string;
@@ -4120,7 +3890,7 @@ export class HttpAction extends Action {
     @property(HttpAction.bodyProperty)
     private _body: StringWithSubstitutions;
 
-    @property(HttpAction.bodyProperty)
+    @property(HttpAction.methodProperty)
     method?: string;
 
     @property(HttpAction.headersProperty)

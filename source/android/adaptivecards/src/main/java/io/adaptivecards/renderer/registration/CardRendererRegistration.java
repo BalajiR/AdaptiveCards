@@ -344,34 +344,17 @@ public class CardRendererRegistration
                         // Try to render the fallback element
                         try
                         {
-                            // Try to render the fallback element
-                            try
+                            BaseCardElement fallbackCardElement = null;
+                            if (fallbackElement instanceof BaseCardElement)
                             {
-                                BaseCardElement fallbackCardElement = null;
-                                if (fallbackElement instanceof BaseCardElement)
-                                {
-                                    fallbackCardElement = (BaseCardElement) fallbackElement;
-                                }
-                                else if ((fallbackCardElement = BaseCardElement.dynamic_cast(fallbackElement)) == null)
-                                {
-                                    throw new InternalError("Unable to convert BaseElement to BaseCardElement object model.");
-                                }
+                                fallbackCardElement = (BaseCardElement) fallbackElement;
+                            }
+                            else if ((fallbackCardElement = BaseCardElement.dynamic_cast(fallbackElement)) == null)
+                            {
+                                throw new InternalError("Unable to convert BaseElement to BaseCardElement object model.");
+                            }
 
-                                IBaseCardElementRenderer fallbackRenderer = m_typeToRendererMap.get(fallbackElement.GetElementTypeString());
-
-                                if (fallbackRenderer == null)
-                                {
-                                    throw new AdaptiveFallbackException(fallbackCardElement);
-                                }
-
-                                if (!fallbackElement.MeetsRequirements(featureRegistration))
-                                {
-                                    throw new AdaptiveFallbackException(fallbackCardElement, featureRegistration);
-                                }
-
-                                renderedCard.addWarning(new AdaptiveWarning(AdaptiveWarning.UNKNOWN_ELEMENT_TYPE,
-                                    "Performing fallback for '" + cardElement.GetElementTypeString() +
-                                        "' (fallback element type: '" + fallbackCardElement.GetElementTypeString() + "')"));
+                            IBaseCardElementRenderer fallbackRenderer = m_typeToRendererMap.get(fallbackElement.GetElementTypeString());
 
                             if (fallbackRenderer == null)
                             {
@@ -395,16 +378,7 @@ public class CardRendererRegistration
                             // As the fallback element didn't exist, go back to trying
                             if (fallbackElement.GetFallbackType() == FallbackType.Content)
                             {
-                                // As the fallback element didn't exist, go back to trying
-                                if (fallbackElement.GetFallbackType() == FallbackType.Content)
-                                {
-                                    fallbackElement = fallbackElement.GetFallbackContent();
-                                }
-                                else
-                                {
-                                    // The element has no fallback, just clear the element so the cycle ends
-                                    fallbackElement = null;
-                                }
+                                fallbackElement = fallbackElement.GetFallbackContent();
                             }
                             else
                             {
@@ -413,19 +387,12 @@ public class CardRendererRegistration
                             }
                         }
                     }
-                    else if (cardElement.GetFallbackType() == FallbackType.Drop)
-                    {
-                        renderedCard.addWarning(new AdaptiveWarning(AdaptiveWarning.UNKNOWN_ELEMENT_TYPE,
-                            "Dropping element '" + cardElement.GetElementTypeString() + "' for fallback"));
-                        continue;
-                    }
                 }
                 else if (cardElement.GetFallbackType() == FallbackType.Drop)
                 {
                     renderedCard.addWarning(new AdaptiveWarning(AdaptiveWarning.UNKNOWN_ELEMENT_TYPE,
                         "Dropping element '" + cardElement.GetElementTypeString() + "' for fallback"));
                 }
-
             }
             else if (renderArgs.getAncestorHasFallback())
             {

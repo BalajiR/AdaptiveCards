@@ -628,6 +628,21 @@ export class EnumPropertyEditor extends SingleInputPropertyEditor {
 
         return input;
     }
+}
+
+export class HeightPropertyEditor extends ChoicePropertyEditor {
+    protected setPropertyValue(context: PropertySheetContext, value: string) {
+        let processedValue: string;
+
+        switch (value) {
+            case "auto":
+            case "stretch":
+                processedValue = value;
+                break;
+            default:
+                processedValue = "auto";
+                break;
+        }
 
     constructor(
         readonly targetVersion: Adaptive.TargetVersion,
@@ -964,8 +979,11 @@ export abstract class DesignerPeer extends DraggableElement {
         this.treeItem = new DesignerPeerTreeItem(this);
     }
 
-    abstract getBoundingRect(): Rect;
-    abstract getCardObjectBoundingRect(): Rect;
+    changed(updatePropertySheet: boolean) {
+        if (this.onChanged) {
+            this.onChanged(this, updatePropertySheet);
+        }
+    }
 
     changed(updatePropertySheet: boolean) {
         if (this.onChanged) {
@@ -979,10 +997,6 @@ export abstract class DesignerPeer extends DraggableElement {
 
     populatePropertySheet(propertySheet: PropertySheet, defaultCategory: string = PropertySheetCategory.DefaultCategory) {
         // Do nothing in base implementation
-    }
-
-    getTreeItemText(): string {
-        return this.internalGetTreeItemText();
     }
 
     canDrop(peer: DesignerPeer): boolean {
@@ -1144,16 +1158,6 @@ export abstract class DesignerPeer extends DraggableElement {
 
         if (this.onParentChanged) {
             this.onParentChanged(this);
-        }
-    }
-
-    scrollIntoView() {
-        if (this.renderedElement) {
-            this.renderedElement.scrollIntoView();
-        }
-
-        if (this.treeItem && this.treeItem.renderedElement) {
-            this.treeItem.renderedElement.scrollIntoView();
         }
     }
 
@@ -1690,7 +1694,7 @@ export class AdaptiveCardPeer extends TypedCardElementPeer<Adaptive.AdaptiveCard
 
             propertySheet.add(
                 PropertySheetCategory.SelectionAction,
-                new SubPropertySheetEntry(Adaptive.Versions.v1_2, this.cardElement.selectAction, subPropertySheet));
+                new SubPropertySheetEntry(Adaptive.Versions.v1_0, this.cardElement.selectAction, subPropertySheet));
         }
     }
 }
@@ -1791,7 +1795,7 @@ export class ColumnPeer extends TypedCardElementPeer<Adaptive.Column> {
 
             propertySheet.add(
                 PropertySheetCategory.SelectionAction,
-                new SubPropertySheetEntry(Adaptive.Versions.v1_2, this.cardElement.selectAction, subPropertySheet));
+                new SubPropertySheetEntry(Adaptive.Versions.v1_0, this.cardElement.selectAction, subPropertySheet));
         }
     }
 }
@@ -1861,7 +1865,7 @@ export class ColumnSetPeer extends TypedCardElementPeer<Adaptive.ColumnSet> {
 
             propertySheet.add(
                 PropertySheetCategory.SelectionAction,
-                new SubPropertySheetEntry(Adaptive.Versions.v1_2, this.cardElement.selectAction, subPropertySheet));
+                new SubPropertySheetEntry(Adaptive.Versions.v1_0, this.cardElement.selectAction, subPropertySheet));
         }
     }
 
@@ -1925,7 +1929,7 @@ export class ContainerPeer extends TypedCardElementPeer<Adaptive.Container> {
 
             propertySheet.add(
                 PropertySheetCategory.SelectionAction,
-                new SubPropertySheetEntry(Adaptive.Versions.v1_2, this.cardElement.selectAction, subPropertySheet));
+                new SubPropertySheetEntry(Adaptive.Versions.v1_0, this.cardElement.selectAction, subPropertySheet));
         }
     }
 }
@@ -2113,7 +2117,7 @@ export class ImagePeer extends TypedCardElementPeer<Adaptive.Image> {
 
                 propertySheet.add(
                     PropertySheetCategory.SelectionAction,
-                    new SubPropertySheetEntry(Adaptive.Versions.v1_2, this.cardElement.selectAction, subPropertySheet));            }
+                    new SubPropertySheetEntry(Adaptive.Versions.v1_0, this.cardElement.selectAction, subPropertySheet));            }
         }
     }
 }
@@ -2465,7 +2469,7 @@ export class TextBlockPeer extends TypedCardElementPeer<Adaptive.TextBlock> {
     static readonly sizeProperty = new EnumPropertyEditor(Adaptive.Versions.v1_0, "size", "Size", Adaptive.TextSize);
     static readonly weightProperty = new EnumPropertyEditor(Adaptive.Versions.v1_0, "weight", "Weight", Adaptive.TextWeight);
     static readonly colorProperty = new EnumPropertyEditor(Adaptive.Versions.v1_0, "color", "Color", Adaptive.TextColor);
-    static readonly subtleProperty = new BooleanPropertyEditor(Adaptive.Versions.v1_0, "subtle", "Subtle");
+    static readonly subtleProperty = new BooleanPropertyEditor(Adaptive.Versions.v1_0, "isSubtle", "Subtle");
 
     protected createInplaceEditor(): DesignerPeerInplaceEditor {
         return new TextBlockPeerInplaceEditor(this.cardElement);
